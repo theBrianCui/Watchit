@@ -1,3 +1,8 @@
-var $ = require('jquery');
+var config = require('./config.json');
+var request = require('request');
+
 console.log("Hello, world!");
-console.log($.toString());
+console.log(config.mandrillKey);
+
+
+
