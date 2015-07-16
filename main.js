@@ -109,14 +109,13 @@ redditPost.prototype.equals = function(post) {
 }
 
 var oldListing = new redditListing(null);
-var failsBeforeAlert = 6;
 var fails = 0;
 var failsResponses = [];
 var attempts = 0;
 
 function main() {
     attempts++;
-    if(fails >= failsBeforeAlert) {
+    if(fails >= config.alertOnFailures) {
 	var errorResponseBody = "";
 	for(var i = 0; i < failsResponses.length; i++) {
 	    errorResponseBody += (failsResponses[i] + '<br/>');
