@@ -1,11 +1,16 @@
 var config = require('./config.json');
 var request = require('request');
 
-console.log("Hello, world!");
-console.log(config.mandrillKey);
+function log(message) {
+    console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
+		+ " : " + message);
+}
+
+log("Launching Watchit!");
+log("Mandrill API Key: " + config.mandrillKey);
 
 function dispatchMail(subject, body) {
-    console.log("Email dispatching...");
+    log("Email dispatching...");
     request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
 	  'method': 'POST',
 	  'json': { 'key': config.mandrillKey,
@@ -23,21 +28,21 @@ function dispatchMail(subject, body) {
 		  }
 	    }, function(error, response, body) {
 		if (!error && response.statusCode == 200) {
-		    console.log("Email successfully dispatched.");
+		    log("Email successfully dispatched.");
 		} else {
-		    console.log("Email Dispatch Error!");
-		    console.log('error ' + JSON.stringify(error));
-		    console.log('response ' + JSON.stringify(response));
-		    console.log('body ' + JSON.stringify(body));
+		    log("Email Dispatch Error!");
+		    log('error ' + JSON.stringify(error));
+		    log('response ' + JSON.stringify(response));
+		    log('body ' + JSON.stringify(body));
 		}
 	});
 };
 
 function checkSubreddit() {
-    request({ 'url': 'https://reddit.com/r/buildapcsales/new.json' },
+    log("Pollling for new posts...");
+    request({ 'url': 'https://reddit.com/r/' + config.subreddit + '/new.json' },
 	    function(error, response, body) {
 		if (!error && response.statusCode == 200) {
-		    console.log("Reddit read OK");
 		    var listing = new redditListing(body);
 		    var newPosts = [];
 		    for(var i = 0; i < listing.posts.length; i++) {
@@ -64,12 +69,12 @@ function checkSubreddit() {
 			emailTitle = emailTitle.substring(0, 70);
 			dispatchMail(emailTitle, emailBody);
 		    } else {
-			console.log("No new posts...");
+			log("No new posts...");
 		    }
 		    fails = 0;
 		    oldListing = listing;
 		} else {
-		    console.log("Reddit read error!");
+		    log("Reddit read error!");
 		    failsResponses.push("Error: " + JSON.stringify(error) + ", Response: " + JSON.stringify(response));
 		    fails++;
 		}
@@ -126,8 +131,15 @@ function main() {
 	failsResponses = [];
     }
     if(attempts % 5 == 0)
-	console.log("Status: " + attempts + " attempts, " + fails + " fails in queue.");
-    setTimeout(checkSubreddit, 6000);
+	log("Status: " + attempts + " attempts, " + fails + " fails in queue.");
+    if(attempts != 1)
+	setTimeout(checkSubreddit, config.interval);
+    else
+	checkSubreddit();
 }
 
-main();
+if(config.interval >= 4000)
+    main();
+else
+    log("Interval is invalid or too small!");
+   

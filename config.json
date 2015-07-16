@@ -3,6 +3,8 @@
     "email": {
 	"from": "brian@briancui.com",
 	"to": "brian.cui.dispatch@hotmail.com",
-	"subject": "Watchit : Test Email",
-	"body": "Test Body for Watchit" }
+	"subject": "Watchit Alert",
+	"body": "Test Body for Watchit" },
+    "subreddit": "buildapcsales",
+    "interval": 60000
 }
