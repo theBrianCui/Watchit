@@ -78,8 +78,8 @@ function checkSubreddit() {
 		    failsResponses.push("Error: " + JSON.stringify(error) + ", Response: " + JSON.stringify(response));
 		    fails++;
 		}
+		main();
 	    });
-    main();
 }
 
 function redditListing(json) {
@@ -105,12 +105,7 @@ function redditPost(rawPost) {
 }
 
 redditPost.prototype.equals = function(post) {
-    return (this.domain == post.domain
-	    && this.subreddit == post.subreddit
-	    && this.url == post.url
-	    && this.permalink == post.permalink
-	    && this.title == post.title
-	    && this.author == post.author);
+    return (this.permalink == post.permalink);
 }
 
 var oldListing = new redditListing(null);
