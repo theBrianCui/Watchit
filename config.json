@@ -4,7 +4,8 @@
 	"from": "brian@briancui.com",
 	"to": "brian.cui.dispatch@hotmail.com",
 	"subject": "Watchit Alert",
-	"body": "Test Body for Watchit" },
+	"body": "Test Body for Watchit"
+    },
     "subreddit": "thankssam",
     "interval": 60000,
     "alertOnFailures": 6

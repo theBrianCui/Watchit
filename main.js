@@ -1,5 +1,7 @@
 var config = require('./config.json');
+var configNew = require('./config-new.json');
 var request = require('request');
+
 
 function log(message) {
     console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
@@ -11,6 +13,97 @@ log("Mandrill API Key: " + config.mandrillKey);
 
 function dispatchMail(subject, body) {
     log("Email dispatching...");
+    request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
+	      'method': 'POST',
+	      'json': { 'key': config.mandrillKey,
+			'message': {
+			    'from_email': config.email.from,
+			    'to': [
+				{
+				    'email': config.email.to,
+				    'type': 'to'
+				}],
+			    'autotext': 'true',
+			    'subject': subject,
+			    'html': body,
+			}
+		      }
+	    }, function(error, response, body) {
+		if (!error && response.statusCode == 200) {
+		    log("Email successfully dispatched.");
+		} else {
+		    log("Email Dispatch Error!");
+		    log('error ' + JSON.stringify(error));
+		    log('response ' + JSON.stringify(response));
+		    log('body ' + JSON.stringify(body));
+		}
+	    });
+};
+
+function Dispatcher(watchers) {
+    var _ready = this.watchers.length;
+    
+    var scheduleDispatch = function() {
+	_ready = 0;
+	for(var i = 0; i < watchers.length; i++) {
+	    setTimeout(watchers[i].check, (2000 * i + interval));
+	}
+    };
+
+    this.complete = function() {
+	_ready++;
+	if(_ready == watchers.length)
+	    scheduleDispatch();
+    };
+
+    this.start = function () {
+	scheduleDispatch();
+    };
+};
+
+function Watcher(configWatcher) {
+    this.subreddit = configWatcher.subreddit;
+    this.email = configWatcher.email;
+    this.interval = configWatcher.interval;
+    this.maxFailures = configWatcher.alertOnFailures;
+    this.oldPosts = [];
+};
+
+Watcher.prototype.checkSubreddit = function () {
+    log('Watcher /r/' + this.subreddit + ' is checking for new posts...');
+    request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
+	function(error, response, body) {
+	    if (!error && response.statusCode == 200) {
+
+		//Take all posts and turn them into redditPost objects
+		var loadedPosts = JSON.parse(body).data.children.map(function (post) {
+		    return new redditPost(post);
+		});
+
+		//Step through each post from the loadedPosts and compare with oldPosts
+		//Since listings are sorted by submission date, we can stop as soon as an old post is seen
+		var newPosts = [];
+		for(var k = 0; k < loadedPosts.length; k++) {
+		    if(!loadedPosts[k].equals(this.oldPosts[k]))
+			newPosts.push(loadedPosts[k])
+		    else
+			break;
+		}
+
+		var message = this.composeEmail(newPosts);
+		this.sendEmail(this.emailSubject, message);
+		    
+	    } else {
+		
+	    }
+	});
+};
+
+Watcher.prototype.composeEmail = function(posts) {
+    
+};
+
+Watcher.prototype.sendEmail = function (subject, body) {
     request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
 	  'method': 'POST',
 	  'json': { 'key': config.mandrillKey,
@@ -37,6 +130,22 @@ function dispatchMail(subject, body) {
 		}
 	});
 };
+
+function redditPost(rawPost) {
+    rawPost = rawPost.data;
+    this.domain = rawPost.domain;
+    this.subreddit = rawPost.subreddit;
+    this.url = rawPost.url;
+    this.permalink = rawPost.permalink;
+    this.title = rawPost.title;
+    this.author = rawPost.author;
+}
+
+redditPost.prototype.equals = function(post) {
+    return (this.permalink == post.permalink);
+}    
+
+
 
 function checkSubreddit() {
     log("Pollling for new posts...");
@@ -80,6 +189,7 @@ function checkSubreddit() {
 		}
 		main();
 	    });
+
 }
 
 function redditListing(json) {
@@ -92,20 +202,6 @@ function redditListing(json) {
     for(var i = 0; i < rawPosts.length; i++)
 	this.posts.push(new redditPost(rawPosts[i]));
     }
-}
-
-function redditPost(rawPost) {
-    rawPost = rawPost.data;
-    this.domain = rawPost.domain;
-    this.subreddit = rawPost.subreddit;
-    this.url = rawPost.url;
-    this.permalink = rawPost.permalink;
-    this.title = rawPost.title;
-    this.author = rawPost.author;
-}
-
-redditPost.prototype.equals = function(post) {
-    return (this.permalink == post.permalink);
 }
 
 var oldListing = new redditListing(null);
