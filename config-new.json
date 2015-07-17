@@ -1,0 +1,27 @@
+{
+    "mandrillKey":"6NNUHaJmNHxZM9JVTBYGOQ",
+    "watchers": [
+	{
+	    "subreddit": "buildapcsales",
+	    "interval": 5000,
+	    "email": {
+		"from": "watchit.tests@gmail.com",
+		"to": "watchit.tests@gmail.com",
+		"subject": "Watchit: [subreddit] Alert! [summary]",
+		"body": "[title]<br/>[url]<br/>[permalink]"
+	    },
+	    "alertOnFailures": 6
+	},
+	{
+	    "subreddit": "",
+	    "interval": 20000,
+	    "email": {
+		"from": "watchit.tests@gmail.com",
+		"to": "watchit.tests@gmail.com",
+		"subject": "Watchit: [subreddit] Alert! [summary]",
+		"body": "[title]<br/>[url]<br/>[permalink]"
+	    },
+	    "alertOnFailures": 6
+	}
+    ]
+}
