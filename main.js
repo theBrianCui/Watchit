@@ -107,6 +107,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 
 		    log(newPosts.length + ' new posts were found on ' + this.subreddit);
 		    if(newPosts.length > 0) {
+			log('The newest post is ' + newPosts[0].ageString() + ' old.');
 			var message = this.composeEmail.call(this, newPosts);
 			this.sendEmail.call(this, this.email.subject
 					.replace('[subreddit]', this.subreddit),
@@ -165,6 +166,22 @@ function redditPost(rawPost) {
     this.permalink = rawPost.permalink;
     this.title = rawPost.title;
     this.author = rawPost.author;
+    this.score = rawPost.score;
+    this.comments = rawPost.num_comments;
+    this.created_time = rawPost.created_utc;
+    this.age = function() {
+	return Math.floor((new Date).getTime()/1000) - this.created_utc;
+    };
+    this.ageString = function() {
+	var age = this.age();
+	var hours = Math.floor(age/3600);
+	var minutes = Math.floor((age - (hours * 3600))/60);
+
+	if(hours == 0 && minutes == 0)
+	    return '<1 minute';
+	else
+	    return hours + ' hour(s) ' + minutes + ' minute(s)';
+    };
 }
 
 redditPost.prototype.equals = function(post) {
