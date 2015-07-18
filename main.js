@@ -11,35 +11,6 @@ function log(message) {
 log("Launching Watchit!");
 log("Mandrill API Key: " + config.mandrillKey);
 
-function dispatchMail(subject, body) {
-    log("Email dispatching...");
-    request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
-	      'method': 'POST',
-	      'json': { 'key': config.mandrillKey,
-			'message': {
-			    'from_email': config.email.from,
-			    'to': [
-				{
-				    'email': config.email.to,
-				    'type': 'to'
-				}],
-			    'autotext': 'true',
-			    'subject': subject,
-			    'html': body,
-			}
-		      }
-	    }, function(error, response, body) {
-		if (!error && response.statusCode == 200) {
-		    log("Email successfully dispatched.");
-		} else {
-		    log("Email Dispatch Error!");
-		    log('error ' + JSON.stringify(error));
-		    log('response ' + JSON.stringify(response));
-		    log('body ' + JSON.stringify(body));
-		}
-	    });
-};
-
 function Dispatcher(watchers) {
     var _lock = false;
     var _queue = 0;
@@ -114,7 +85,9 @@ Watcher.prototype.checkSubreddit = function () {
 		}
 
 		var message = this.composeEmail(newPosts);
-		this.sendEmail(this.email.subject, message);
+		this.sendEmail(this.email.subject
+			       .replace('[subreddit]', this.subreddit),
+			       message);
 		    
 	    } else {
 		log("Subreddit " + this.subreddit + " read failure!");
@@ -142,10 +115,10 @@ Watcher.prototype.sendEmail = function (subject, body) {
 	  'method': 'POST',
 	  'json': { 'key': config.mandrillKey,
 		    'message': {
-			'from_email': this.email..from,
+			'from_email': this.email.from,
 			'to': [
 			    {
-				'email': this..email.to,
+				'email': this.email.to,
 				'type': 'to'
 			    }],
 			'autotext': 'true',
