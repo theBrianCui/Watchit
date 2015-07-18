@@ -1,6 +1,13 @@
 var config = require('./config.json');
+var argv = require('yargs').argv;
 var request = require('request');
 
+//Process optional command line arguments
+//These arguments override what's in the config.json file
+
+//API key:
+if(argv.key)
+    config.mandrillKey = argv.key;
 
 function log(message) {
     console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
