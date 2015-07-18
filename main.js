@@ -15,7 +15,7 @@ if(argv.key) {
     log("You have not provided a Mandrill API key for email notifications.");
     log("Please either supply a Mandrill API key in the config.json file, or ");
     log("provide one as a command line argument ( --key=yourkeyhere ).");
-    log("Check out the readme.md file for more information on how to get one.");
+    log("Check out the README.md file for more information on how to get one.");
     process.exit(1);
 }
     
