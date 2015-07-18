@@ -170,10 +170,11 @@ function redditPost(rawPost) {
     this.comments = rawPost.num_comments;
     this.created_time = rawPost.created_utc;
     this.age = function() {
-	return Math.floor((new Date).getTime()/1000) - this.created_utc;
+	return Math.floor((new Date).getTime()/1000) - this.created_time;
     };
     this.ageString = function() {
 	var age = this.age();
+	
 	var hours = Math.floor(age/3600);
 	var minutes = Math.floor((age - (hours * 3600))/60);
 
