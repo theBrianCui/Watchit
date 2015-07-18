@@ -15,19 +15,20 @@ var supportedServices = {
 };
 var service = config.service.toLowerCase();
 
-//API key:
-if(argv.key && supportedServices[service]) {
+//API key provided as command line argument:
+if(argv.key)
     config.apikey = argv.key;
-} else if(!supportedServices[service]) {
+
+if(!supportedServices[service]) {
     log(service + " is not a supported email service. Please check the README.md file for details.");
     process.exit(1);
 }
 
 if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
-    log("You have not provided a " + supportedServices[service] + " API key for email notifications.");
-    log("Please either supply a " + supportedServices[service] + " API key in the config.json file, or ");
-    log("provide one as a command line argument ( --key=yourkeyhere ).");
-    log("Check out the README.md file for more information on how to get one.");
+    log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
+	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file, or\n"	
+	+ "provide one as a command line argument ( --key=yourkeyhere ).\n"
+	+ "Check out the README.md file for more information on how to get one.");
     process.exit(1);
 }
 
