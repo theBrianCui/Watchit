@@ -20,7 +20,6 @@ function Dispatcher(watchers) {
     });
     
     var scheduleDispatch = function(subreddit) {
-	log('Scheduling next dispatch for ' + subreddit);
 	setTimeout(function() { dispatch(subreddit) },
 		   _watcherMap[subreddit].interval);
     };
@@ -68,7 +67,7 @@ function Watcher(configWatcher) {
 };
 
 Watcher.prototype.checkSubreddit = function (callback) {
-    log('Watcher /r/' + this.subreddit + ' is checking for new posts...');
+    log('Checking ' + this.subreddit + ' for new posts...');
     request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
 	    (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
