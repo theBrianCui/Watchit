@@ -10,7 +10,7 @@ log("Launching Watchit!");
 //API key:
 if(argv.key) {
     config.apikey = argv.key;
-} else if(config.mandrillKey == "paste-your-sendgrid-api-key-here") {
+} else if(config.apikey == "paste-your-api-key-here") {
     //The placeholder string is being used
     log("You have not provided a SendGrid API key for email notifications.");
     log("Please either supply a SendGrid API key in the config.json file, or ");
