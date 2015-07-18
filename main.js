@@ -9,23 +9,24 @@ log("Launching Watchit!");
 
 //API key:
 if(argv.key) {
-    config.mandrillKey = argv.key;
-} else if(config.mandrillKey == "paste-your-Mandrill-api-key-here") {
+    config.apikey = argv.key;
+} else if(config.mandrillKey == "paste-your-sendgrid-api-key-here") {
     //The placeholder string is being used
-    log("You have not provided a Mandrill API key for email notifications.");
-    log("Please either supply a Mandrill API key in the config.json file, or ");
+    log("You have not provided a SendGrid API key for email notifications.");
+    log("Please either supply a SendGrid API key in the config.json file, or ");
     log("provide one as a command line argument ( --key=yourkeyhere ).");
     log("Check out the README.md file for more information on how to get one.");
     process.exit(1);
 }
-    
+
+var sendgrid = require('sendgrid')(config.apikey);
 
 function log(message) {
     console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
 		+ " : " + message);
 }
 
-log("Mandrill API Key: " + config.mandrillKey);
+log("SendGrid API Key: " + config.apikey);
 
 function Dispatcher(watchers) {
     var _lock = false;
@@ -137,33 +138,23 @@ Watcher.prototype.composeEmail = function(posts) {
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
-    request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
-	  'method': 'POST',
-	  'json': { 'key': config.mandrillKey,
-		    'message': {
-			'from_email': this.email.from,
-			'to': [
-			    {
-				'email': this.email.to,
-				'type': 'to'
-			    }],
-			'autotext': 'true',
-			'subject': subject,
-			'html': body,
-		    }
-		  }
-	    }, (function(error, response, body) {
-		if (!error && response.statusCode == 200) {
-		    log("Alert Email by " + this.subreddit
-			+ " successfully dispatched.");
-		} else {
-		    log("Alert Email by " + this.subreddit
-			+ " Dispatch Error!");
-		    log('error ' + JSON.stringify(error));
-		    log('response ' + JSON.stringify(response));
-		    log('body ' + JSON.stringify(body));
-		}
-	    }).bind(this));
+    sendgrid.send(new sendgrid.Email({
+	to: this.email.to,
+	from: this.email.from,
+	subject: subject,
+	html: body
+    }), (function(error, response, body) {
+	if (response.message == "success") {
+	    log("Alert Email by " + this.subreddit
+		+ " successfully dispatched.");
+	} else {
+	    log("Alert Email by " + this.subreddit
+		+ " Dispatch Error!");
+	    log('error ' + JSON.stringify(error));
+	    log('response ' + JSON.stringify(response));
+	    log('body ' + JSON.stringify(body));
+	}
+    }).bind(this));
 };
 
 function redditPost(rawPost) {

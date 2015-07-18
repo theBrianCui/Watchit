@@ -1,9 +1,9 @@
 {
-    "mandrillKey":"paste-your-Mandrill-api-key-here",
+    "apikey":"paste-your-sendgrid-api-key-here",
     "watchers": [
 	{
 	    "subreddit": "buildapcsales",
-	    "interval": 30000,
+	    "interval": 4000,
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
