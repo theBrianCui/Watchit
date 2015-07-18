@@ -19,8 +19,8 @@ function Dispatcher(watchers) {
 	_watcherMap[watcher.subreddit] = watcher;
     });
     
-    var scheduleInitialDispatch = function(subreddit) {
-	log('Scheduling dispatch for ' + subreddit);
+    var scheduleDispatch = function(subreddit) {
+	log('Scheduling next dispatch for ' + subreddit);
 	setTimeout(function() { dispatch(subreddit) },
 		   _watcherMap[subreddit].interval);
     };
@@ -33,15 +33,19 @@ function Dispatcher(watchers) {
     var dispatch = function(subreddit) {
 	if(!_lock) {
 	    _lock = true;
-	    _watcherMap[subreddit].checkSubreddit();
+	    _watcherMap[subreddit].checkSubreddit(
+		function() {
+		    scheduleDispatch(subreddit);
+		}
+	    );
 
-	    if(_queue > 0) queue--;
+	    if(_queue > 0) _queue--;
 	    setTimeout(function() {
 		_lock = false;
 	    }, 2000);
 	    
 	} else {
-	    queue++;
+	    _queue++;
 	    delayDispatch(subreddit);
 	}
     };
@@ -49,7 +53,7 @@ function Dispatcher(watchers) {
     this.start = function() {
 	for(var subreddit in _watcherMap) {
 	    if (_watcherMap.hasOwnProperty(subreddit)) {
-		scheduleInitialDispatch(subreddit);
+		scheduleDispatch(subreddit);
 	    }
 	}	
     };
@@ -63,7 +67,7 @@ function Watcher(configWatcher) {
     this.oldPosts = [];
 };
 
-Watcher.prototype.checkSubreddit = function () {
+Watcher.prototype.checkSubreddit = function (callback) {
     log('Watcher /r/' + this.subreddit + ' is checking for new posts...');
     request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
 	    (function(error, response, body) {
@@ -83,11 +87,13 @@ Watcher.prototype.checkSubreddit = function () {
 			else
 			    break;
 		    }
-		    
-		    var message = this.composeEmail.call(this, newPosts);
-		    this.sendEmail.call(this, this.email.subject
-				   .replace('[subreddit]', this.subreddit),
-				   message);
+
+		    if(newPosts.length > 0) {
+			var message = this.composeEmail.call(this, newPosts);
+			this.sendEmail.call(this, this.email.subject
+					.replace('[subreddit]', this.subreddit),
+					message);
+		    }
 		    
 		} else {
 		    log("Subreddit " + this.subreddit + " read failure!");
@@ -95,6 +101,7 @@ Watcher.prototype.checkSubreddit = function () {
 		    log("response" + JSON.stringify(response));
 		    log("body" + JSON.stringify(body));
 		}
+		callback();
 	    }).bind(this));
 };
 
