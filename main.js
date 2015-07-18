@@ -174,6 +174,12 @@ function redditPost(rawPost) {
     this.permalink = rawPost.permalink;
     this.title = rawPost.title;
     this.author = rawPost.author;
+    this.score = rawPost.score;
+    this.comments = rawPost.num_comments;
+    this.created_time = rawPost.created_utc;
+    this.age = function() {
+	return Math.floor((new Date).getTime()/1000) - this.created_utc;
+    };
 }
 
 redditPost.prototype.equals = function(post) {
