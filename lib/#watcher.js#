@@ -1,5 +1,0 @@
-//Definition of the Watcher object.
-module.exports = function(subreddit, filtersls
-			 ) {
-    
-}
