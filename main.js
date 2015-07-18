@@ -19,7 +19,8 @@ function Dispatcher(watchers) {
 	_watcherMap[watcher.subreddit] = watcher;
     });
     
-    var scheduleInitialDispatch = function(subreddit) {	
+    var scheduleInitialDispatch = function(subreddit) {
+	log('Scheduling dispatch for ' + subreddit);
 	setTimeout(function() { dispatch(subreddit) },
 		   _watcherMap[subreddit].interval);
     };
@@ -47,7 +48,7 @@ function Dispatcher(watchers) {
 
     this.start = function() {
 	for(var subreddit in _watcherMap) {
-	    if (subreddit.hasOwnProperty(subreddit)) {
+	    if (_watcherMap.hasOwnProperty(subreddit)) {
 		scheduleInitialDispatch(subreddit);
 	    }
 	}	
@@ -65,47 +66,47 @@ function Watcher(configWatcher) {
 Watcher.prototype.checkSubreddit = function () {
     log('Watcher /r/' + this.subreddit + ' is checking for new posts...');
     request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
-	function(error, response, body) {
-	    if (!error && response.statusCode == 200) {
+	    (function(error, response, body) {
+		if (!error && response.statusCode == 200) {
 
-		//Take all posts and turn them into redditPost objects
-		var loadedPosts = JSON.parse(body).data.children.map(function (post) {
-		    return new redditPost(post);
-		});
-
-		//Step through each post from the loadedPosts and compare with oldPosts
-		//Since listings are sorted by submission date, we can stop as soon as an old post is seen
-		var newPosts = [];
-		for(var k = 0; k < loadedPosts.length; k++) {
-		    if(!loadedPosts[k].equals(this.oldPosts[k]))
-			newPosts.push(loadedPosts[k])
-		    else
-			break;
-		}
-
-		var message = this.composeEmail(newPosts);
-		this.sendEmail(this.email.subject
-			       .replace('[subreddit]', this.subreddit),
-			       message);
+		    //Take all posts and turn them into redditPost objects
+		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
+			return new redditPost(post);
+		    });
 		    
-	    } else {
-		log("Subreddit " + this.subreddit + " read failure!");
-		log("error" + JSON.stringify(error));
-		log("response" + JSON.stringify(response));
-		log("body" + JSON.stringify(body));
-	    }
-	});
+		    //Step through each post from the loadedPosts and compare with oldPosts
+		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
+		    var newPosts = [];
+		    for(var k = 0; k < loadedPosts.length; k++) {
+			if(!loadedPosts[k].equals.call(this, this.oldPosts[0]))
+			    newPosts.push(loadedPosts[k])
+			else
+			    break;
+		    }
+		    
+		    var message = this.composeEmail.call(this, newPosts);
+		    this.sendEmail.call(this, this.email.subject
+				   .replace('[subreddit]', this.subreddit),
+				   message);
+		    
+		} else {
+		    log("Subreddit " + this.subreddit + " read failure!");
+		    log("error" + JSON.stringify(error));
+		    log("response" + JSON.stringify(response));
+		    log("body" + JSON.stringify(body));
+		}
+	    }).bind(this));
 };
 
 Watcher.prototype.composeEmail = function(posts) {
     var response = '';
-    posts.forEach(function(post) {
-	response.push('<p>' + this.body
-		      .replace('[title]', post.title)
-		      .replace('[url]', post.url)
-		      .replace('[permalink]', post.permalink)
+    posts.forEach((function(post) {
+	response += ('<p>' + this.email.body
+		     .replace('[title]', post.title)
+		     .replace('[url]', post.url)
+		     .replace('[permalink]', post.permalink)
 		     + '</p>');
-    })
+    }).bind(this))
     return response;
 };
 
@@ -125,7 +126,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
 			'html': body,
 		    }
 		  }
-	    }, function(error, response, body) {
+	    }, (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
 		    log("Alert Email by " + this.subreddit
 			+ " successfully dispatched.");
@@ -136,7 +137,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
 		    log('response ' + JSON.stringify(response));
 		    log('body ' + JSON.stringify(body));
 		}
-	});
+	    }).bind(this));
 };
 
 function redditPost(rawPost) {
@@ -150,6 +151,8 @@ function redditPost(rawPost) {
 }
 
 redditPost.prototype.equals = function(post) {
+    if(!post)
+	return false;
     return (this.permalink == post.permalink);
 }    
 
@@ -161,6 +164,7 @@ function main() {
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
+    log('Engaging Dispatcher...');
 }
 
 main();
