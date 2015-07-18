@@ -5,16 +5,26 @@ var request = require('request');
 //Process optional command line arguments
 //These arguments override what's in the config.json file
 
+log("Launching Watchit!");
+
 //API key:
-if(argv.key)
+if(argv.key) {
     config.mandrillKey = argv.key;
+} else if(config.mandrillKey == "paste-your-Mandrill-api-key-here") {
+    //The placeholder string is being used
+    log("You have not provided a Mandrill API key for email notifications.");
+    log("Please either supply a Mandrill API key in the config.json file, or ");
+    log("provide one as a command line argument ( --key=yourkeyhere ).");
+    log("Check out the readme.md file for more information on how to get one.");
+    process.exit(1);
+}
+    
 
 function log(message) {
     console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
 		+ " : " + message);
 }
 
-log("Launching Watchit!");
 log("Mandrill API Key: " + config.mandrillKey);
 
 function Dispatcher(watchers) {
@@ -180,7 +190,7 @@ function main() {
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
-    log('Engaging Dispatcher...');
+    log('Watchit is now running.');
 }
 
 main();
