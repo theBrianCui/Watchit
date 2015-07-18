@@ -41,23 +41,46 @@ function dispatchMail(subject, body) {
 };
 
 function Dispatcher(watchers) {
-    var _ready = this.watchers.length;
+    var _lock = false;
+    var _queue = 0;
+
+    var _watcherMap = {};
+    watchers.forEach(function(watcher) {
+	_watcherMap[watcher.subreddit] = watcher;
+    });
     
-    var scheduleDispatch = function() {
-	_ready = 0;
-	for(var i = 0; i < watchers.length; i++) {
-	    setTimeout(watchers[i].check, (2000 * i + interval));
+    var scheduleInitialDispatch = function(subreddit) {	
+	setTimeout(function() { dispatch(subreddit) },
+		   _watcherMap[subreddit].interval);
+    };
+
+    var delayDispatch = function(subreddit) {
+	setTimeout(function() { dispatch(subreddit) },
+		   2000 * _queue);
+    };
+
+    var dispatch = function(subreddit) {
+	if(!_lock) {
+	    _lock = true;
+	    _watcherMap[subreddit].checkSubreddit();
+
+	    if(_queue > 0) queue--;
+	    setTimeout(function() {
+		_lock = false;
+	    }, 2000);
+	    
+	} else {
+	    queue++;
+	    delayDispatch(subreddit);
 	}
     };
 
-    this.complete = function() {
-	_ready++;
-	if(_ready == watchers.length)
-	    scheduleDispatch();
-    };
-
-    this.start = function () {
-	scheduleDispatch();
+    this.start = function() {
+	for(var subreddit in _watcherMap) {
+	    if (object.hasOwnProperty(subreddit)) {
+		scheduleInitialDispatch(subreddit);
+	    }
+	}	
     };
 };
 
@@ -91,16 +114,27 @@ Watcher.prototype.checkSubreddit = function () {
 		}
 
 		var message = this.composeEmail(newPosts);
-		this.sendEmail(this.emailSubject, message);
+		this.sendEmail(this.email.subject, message);
 		    
 	    } else {
-		
+		log("Subreddit " + this.subreddit + " read failure!");
+		log("error" + JSON.stringify(error));
+		log("response" + JSON.stringify(response));
+		log("body" + JSON.stringify(body));
 	    }
 	});
 };
 
 Watcher.prototype.composeEmail = function(posts) {
-    
+    var response = '';
+    posts.forEach(function(post) {
+	response.push('<p>' + this.body
+		      .replace('[title]', post.title)
+		      .replace('[url]', post.url)
+		      .replace('[permalink]', post.permalink)
+		     + '</p>');
+    })
+    return response;
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
@@ -108,10 +142,10 @@ Watcher.prototype.sendEmail = function (subject, body) {
 	  'method': 'POST',
 	  'json': { 'key': config.mandrillKey,
 		    'message': {
-			'from_email': config.email.from,
+			'from_email': this.email..from,
 			'to': [
 			    {
-				'email': config.email.to,
+				'email': this..email.to,
 				'type': 'to'
 			    }],
 			'autotext': 'true',
@@ -121,9 +155,11 @@ Watcher.prototype.sendEmail = function (subject, body) {
 		  }
 	    }, function(error, response, body) {
 		if (!error && response.statusCode == 200) {
-		    log("Email successfully dispatched.");
+		    log("Alert Email by " + this.subreddit
+			+ " successfully dispatched.");
 		} else {
-		    log("Email Dispatch Error!");
+		    log("Alert Email by " + this.subreddit
+			+ " Dispatch Error!");
 		    log('error ' + JSON.stringify(error));
 		    log('response ' + JSON.stringify(response));
 		    log('body ' + JSON.stringify(body));
@@ -144,8 +180,6 @@ function redditPost(rawPost) {
 redditPost.prototype.equals = function(post) {
     return (this.permalink == post.permalink);
 }    
-
-
 
 function checkSubreddit() {
     log("Pollling for new posts...");
