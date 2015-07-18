@@ -82,18 +82,21 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
 		    var newPosts = [];
 		    for(var k = 0; k < loadedPosts.length; k++) {
-			if(!loadedPosts[k].equals.call(this, this.oldPosts[0]))
+			if(!loadedPosts[k].equals(this.oldPosts[0]))
 			    newPosts.push(loadedPosts[k])
 			else
 			    break;
 		    }
 
+		    log(newPosts.length + ' new posts were found on ' + this.subreddit);
 		    if(newPosts.length > 0) {
 			var message = this.composeEmail.call(this, newPosts);
 			this.sendEmail.call(this, this.email.subject
 					.replace('[subreddit]', this.subreddit),
 					message);
 		    }
+
+		    this.oldPosts = loadedPosts;
 		    
 		} else {
 		    log("Subreddit " + this.subreddit + " read failure!");
