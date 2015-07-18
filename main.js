@@ -2,31 +2,41 @@ var config = require('./config.json');
 var argv = require('yargs').argv;
 var request = require('request');
 
-//Process optional command line arguments
-//These arguments override what's in the config.json file
-
-log("Launching Watchit!");
-
-//API key:
-if(argv.key) {
-    config.apikey = argv.key;
-} else if(config.apikey == "paste-your-api-key-here") {
-    //The placeholder string is being used
-    log("You have not provided a SendGrid API key for email notifications.");
-    log("Please either supply a SendGrid API key in the config.json file, or ");
-    log("provide one as a command line argument ( --key=yourkeyhere ).");
-    log("Check out the README.md file for more information on how to get one.");
-    process.exit(1);
-}
-
-var sendgrid = require('sendgrid')(config.apikey);
-
 function log(message) {
     console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
 		+ " : " + message);
 }
 
-log("SendGrid API Key: " + config.apikey);
+log("Launching Watchit!");
+
+var supportedServices = {
+    sendgrid: "SendGrid",
+    mandrill: "Mandrill",
+};
+var service = config.service.toLowerCase();
+
+//API key:
+if(argv.key && supportedServices[service]) {
+    config.apikey = argv.key;
+} else if(!supportedServices[service]) {
+    log(service + " is not a supported email service. Please check the README.md file for details.");
+    process.exit(1);
+}
+
+if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
+    log("You have not provided a " + supportedServices[service] + " API key for email notifications.");
+    log("Please either supply a " + supportedServices[service] + " API key in the config.json file, or ");
+    log("provide one as a command line argument ( --key=yourkeyhere ).");
+    log("Check out the README.md file for more information on how to get one.");
+    process.exit(1);
+}
+
+//Setup sendgrid
+var sendgrid = {};
+if(service == "sendgrid")
+    sendgrid = require('sendgrid')(config.apikey);
+
+log(supportedServices[service] + " API Key: " + config.apikey);
 
 function Dispatcher(watchers) {
     var _lock = false;
