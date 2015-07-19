@@ -14,7 +14,6 @@ var supportedServices = {
     mandrill: "Mandrill",
 };
 var service = config.service.toLowerCase();
-
 //API key provided as command line argument:
 if(argv.key)
     config.apikey = argv.key;
@@ -150,23 +149,31 @@ Watcher.prototype.composeEmail = function(posts) {
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
-    sendgrid.send(new sendgrid.Email({
-	to: this.email.to,
-	from: this.email.from,
-	subject: subject,
-	html: body
-    }), (function(error, response, body) {
-	if (response.message == "success") {
-	    log("Alert Email by " + this.subreddit
-		+ " successfully dispatched.");
-	} else {
-	    log("Alert Email by " + this.subreddit
-		+ " Dispatch Error!");
-	    log('error ' + JSON.stringify(error));
-	    log('response ' + JSON.stringify(response));
-	    log('body ' + JSON.stringify(body));
-	}
-    }).bind(this));
+    if(service == "sendgrid") {
+	
+	sendgrid.send(new sendgrid.Email({
+	    to: this.email.to,
+	    from: this.email.from,
+	    subject: subject,
+	    html: body
+	}), (function(error, response, body) {
+	    if (response.message == "success") {
+		log("Alert Email by " + this.subreddit
+		    + " successfully dispatched.");
+	    } else {
+		log("Alert Email by " + this.subreddit
+		    + " Dispatch Error!");
+		log('error ' + JSON.stringify(error));
+		log('response ' + JSON.stringify(response));
+		log('body ' + JSON.stringify(body));
+	    }
+	}).bind(this));
+	
+    } else if(service == "mandrill") {
+
+	
+	
+    }
 };
 
 function redditPost(rawPost) {
