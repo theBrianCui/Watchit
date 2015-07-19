@@ -24,3 +24,11 @@ If you lose or forget your SendGrid API key, you can always create a new one by 
 **How to set up Watchit + Mandrill for email sending**
 
 Mandrill is an alternative to SendGrid. 
+
+**How to compile Watchit into a standalone binary executable**
+
+[JXcore](http://jxcore.com/) is used to package Watchit into a standalone binary executable. With JXcore installed (or in the same directory as the current directory), run the terminal command:
+
+`jx package main.js "Watchit" -native -slim config.json`
+
+This will package all files excluding `config.json`, which should be kept outside so it is available for editing, into a standalone binary executable file `Watchit` or `Watchit.exe` on Windows.

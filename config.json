@@ -1,6 +1,6 @@
 {
-    "apikey":"paste-your-api-key-here",
-    "service":"mailgun",
+    "apikey":"fU9h77pIFLLr9Na9o-C3Pw",
+    "service":"mandrill",
     "watchers": [
 	{
 	    "subreddit": "buildapcsales",
