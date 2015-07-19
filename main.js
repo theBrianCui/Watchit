@@ -12,6 +12,7 @@ log("Launching Watchit!");
 var supportedServices = {
     sendgrid: "SendGrid",
     mandrill: "Mandrill",
+    mailgun: "Mailgun"
 };
 var service = config.service.toLowerCase();
 //API key provided as command line argument:
@@ -35,6 +36,15 @@ if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
 var sendgrid = {};
 if(service == "sendgrid")
     sendgrid = require('sendgrid')(config.apikey);
+
+//Setup mailgun and mailcomposer
+var mailgun = {};
+var MailComposer = {};
+if(service == "mailgun") {
+    var Mg = require('mailgun').Mailgun;
+    mailgun = new Mg(config.apikey);
+    MailComposer = require("mailcomposer").MailComposer;
+}
 
 log(supportedServices[service] + " API Key: " + config.apikey);
 
@@ -195,7 +205,26 @@ Watcher.prototype.sendEmail = function (subject, body) {
 			log('response ' + JSON.stringify(response));
 			log('body ' + JSON.stringify(body));
 		    }
-		}).bind(this));	
+		}).bind(this));
+	
+    } else if(service == "mailgun") {
+	var mc = new MailComposer();
+	mc.setMessageOption({
+	    from: this.email.from,
+	    to: this.email.to,
+	    subject: subject,
+	    html: body,
+	});
+
+	mc.buildMessage((function(error, messageSource) {
+	    if(!error && messageSource) {
+		mailgun.sendRaw(this.email.from, this.email.to,
+				messageSource,
+				function(error) {
+				    if(error) log(error);
+				});
+	    }
+	}).bind(this));
     }
 };
 
