@@ -150,7 +150,6 @@ Watcher.prototype.composeEmail = function(posts) {
 
 Watcher.prototype.sendEmail = function (subject, body) {
     if(service == "sendgrid") {
-	
 	sendgrid.send(new sendgrid.Email({
 	    to: this.email.to,
 	    from: this.email.from,
@@ -170,9 +169,33 @@ Watcher.prototype.sendEmail = function (subject, body) {
 	}).bind(this));
 	
     } else if(service == "mandrill") {
-
-	
-	
+	request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
+		  'method': 'POST',
+		  'json': { 'key': config.apikey,
+			    'message': {
+				'from_email': this.email.from,
+				'to': [
+				    {
+					'email': this.email.to,
+					'type': 'to'
+				    }],
+				'autotext': 'true',
+				'subject': subject,
+				'html': body,
+			    }
+			  }
+		}, (function(error, response, body) {
+		    if (!error && response.statusCode == 200) {
+			log("Alert Email by " + this.subreddit
+			    + " successfully dispatched.");
+		    } else {
+			log("Alert Email by " + this.subreddit
+			    + " Dispatch Error!");
+			log('error ' + JSON.stringify(error));
+			log('response ' + JSON.stringify(response));
+			log('body ' + JSON.stringify(body));
+		    }
+		}).bind(this));	
     }
 };
 
