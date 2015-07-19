@@ -128,10 +128,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    log(newPosts.length + ' new posts were found on ' + this.subreddit);
 		    if(newPosts.length > 0) {
 			log('The newest post is ' + newPosts[0].ageString() + ' old.');
-			var message = this.composeEmail.call(this, newPosts);
-			this.sendEmail.call(this, this.email.subject
-					.replace('[subreddit]', this.subreddit),
-					message);
+			var message = this.composeEmail(newPosts);
+			this.sendEmail(this.email.subject.replace('[subreddit]', this.subreddit),
+				       message);
 		    }
 
 		    this.oldPosts = loadedPosts;
@@ -167,14 +166,9 @@ Watcher.prototype.sendEmail = function (subject, body) {
 	    html: body
 	}), (function(error, response, body) {
 	    if (response.message == "success") {
-		log("Alert Email by " + this.subreddit
-		    + " successfully dispatched.");
+		this.logEmailSuccess();
 	    } else {
-		log("Alert Email by " + this.subreddit
-		    + " Dispatch Error!");
-		log('error ' + JSON.stringify(error));
-		log('response ' + JSON.stringify(response));
-		log('body ' + JSON.stringify(body));
+		this.logEmailError(error, response, body);
 	    }
 	}).bind(this));
 	
@@ -196,14 +190,9 @@ Watcher.prototype.sendEmail = function (subject, body) {
 			  }
 		}, (function(error, response, body) {
 		    if (!error && response.statusCode == 200) {
-			log("Alert Email by " + this.subreddit
-			    + " successfully dispatched.");
+			this.logEmailSuccess();
 		    } else {
-			log("Alert Email by " + this.subreddit
-			    + " Dispatch Error!");
-			log('error ' + JSON.stringify(error));
-			log('response ' + JSON.stringify(response));
-			log('body ' + JSON.stringify(body));
+			this.logEmailError(error, response, body);
 		    }
 		}).bind(this));
 	
@@ -220,12 +209,30 @@ Watcher.prototype.sendEmail = function (subject, body) {
 	    if(!error && messageSource) {
 		mailgun.sendRaw(this.email.from, this.email.to,
 				messageSource,
-				function(error) {
-				    if(error) log(error);
-				});
+				(function(error) {
+				    if(error) this.logEmailError(this);
+				    else this.logEmailSuccess();
+				}).bind(this));
+	    } else {
+		this.logEmailError(error);
 	    }
 	}).bind(this));
     }
+};
+
+Watcher.prototype.logEmailSuccess = function() {
+    log("Successfully sent " + this.subreddit
+	+ " alert email to " + this.email.to
+	+ " via " + supportedServices[service]);
+};
+
+Watcher.prototype.logEmailError = function(error, response, body) {
+    log("Failed to send " + this.subreddit
+	+ " alert email to " + this.email.to
+	+ "via " + supportedServices[service]);
+    if(error) log("Error: " + JSON.stringify(error));
+    if(response) log("Response: " + JSON.stringify(response));
+    if(body) log("Body: " + JSON.stringify(body));
 };
 
 function redditPost(rawPost) {

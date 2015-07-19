@@ -1,6 +1,6 @@
 {
     "apikey":"paste-your-api-key-here",
-    "service":"sendgrid",
+    "service":"mailgun",
     "watchers": [
 	{
 	    "subreddit": "buildapcsales",
