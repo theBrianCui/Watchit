@@ -150,8 +150,8 @@ Watcher.prototype.composeEmail = function(posts) {
     posts.forEach((function(post) {
 	response += ('<p>' + this.email.body
 		     .replace('[title]', post.title)
-		     .replace('[url]', post.url)
-		     .replace('[permalink]', post.permalink)
+		     .replace('[url]', (post.selfPost ? '(text only/self post)' : post.url))
+		     .replace('[permalink]', 'http://reddit.com' + post.permalink)
 		     + '</p>');
     }).bind(this))
     return response;
@@ -244,10 +244,13 @@ function redditPost(rawPost) {
     this.title = rawPost.title;
     this.author = rawPost.author;
     this.score = rawPost.score;
+    this.selfPost = rawPost.is_self;
+    this.selfText = rawPost.selftext;
     this.comments = rawPost.num_comments;
-    this.created_time = rawPost.created_utc;
+    this.over18 = rawPost.over_18;
+    this.createdAt = rawPost.created_utc;
     this.age = function() {
-	return Math.floor((new Date).getTime()/1000) - this.created_time;
+	return Math.floor((new Date).getTime()/1000) - this.createdAt;
     };
     this.ageString = function() {
 	var age = this.age();

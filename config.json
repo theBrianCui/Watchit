@@ -4,7 +4,7 @@
     "watchers": [
 	{
 	    "subreddit": "buildapcsales",
-	    "interval": 4000,
+	    "interval": 5000,
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
@@ -15,7 +15,7 @@
 	},
 	{
 	    "subreddit": "thankssam",
-	    "interval": 30000,
+	    "interval": 12000,
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
