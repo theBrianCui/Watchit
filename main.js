@@ -26,8 +26,7 @@ if(!supportedServices[service]) {
 
 if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
     log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
-	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file, or\n"	
-	+ "provide one as a command line argument ( --key=yourkeyhere ).\n"
+	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"	
 	+ "Check out the README.md file for more information on how to get one.");
     process.exit(1);
 }
