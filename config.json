@@ -11,6 +11,19 @@
 		"subject": "Watchit: [subreddit] Alert! [summary]",
 		"body": "[title]<br/>[url]<br/>[permalink]"
 	    },
+	    "filters": [
+		{
+		    "domain": ["amazon", "newegg", "evga", "gpushack",
+			       "staples", "ebay", "bestbuy"],
+		    "title": ["GPU"],
+		    "score": 20,
+		    "age": 7200
+		},
+		{
+		    "score": 100,
+		    "comments": 16
+		}
+	    ],
 	    "alertOnFailures": 6
 	},
 	{
