@@ -102,6 +102,14 @@ function Watcher(configWatcher) {
     this.interval = configWatcher.interval;
     this.maxFailures = configWatcher.alertOnFailures;
     this.oldPosts = [];
+
+    this.filters = [];
+    if(Array.isArray(configWatcher.filters)) {
+	this.filters = configWatcher.filters.map(function(filter) {
+	    return new Filter(filter);
+	});
+    }
+    log(this.subreddit + ' watcher has ' + this.filters.length + ' filters.');
 };
 
 Watcher.prototype.checkSubreddit = function (callback) {
@@ -269,7 +277,7 @@ redditPost.prototype.equals = function(post) {
 };
 
 function Filter(rawFilter) {
-    //String filters
+    //String filters. Can also be arrays.
     this.domain = rawFilter.domain || '';
     this.title = rawFilter.title || '';
     this.url = rawFilter.url || '';
@@ -316,9 +324,11 @@ function Filter(rawFilter) {
 
 function main() {
     var watchers = [];
-    config.watchers.forEach(function(rawWatcher) {
-	watchers.push(new Watcher(rawWatcher));
-    });
+    if(Array.isArray(config.watchers)) {
+	watchers = config.watchers.map(function(watcher) {
+	    return new Watcher(watcher);
+	});
+    }
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
