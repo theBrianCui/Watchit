@@ -269,15 +269,18 @@ redditPost.prototype.equals = function(post) {
 };
 
 function Filter(rawFilter) {
-    this.domain = rawFilter.domain;
-    this.title = rawFilter.title;
-    this.url = rawFilter.url;
-    this.permalink = rawFilter.permalink;
-    this.title = rawFilter.title;
-    this.author = rawFilter.author;
-    this.score = rawFilter.score;
-    this.comments = rawFilter.comments;
-    this.age = rawFilter.age;
+    //String filters
+    this.domain = rawFilter.domain || '';
+    this.title = rawFilter.title || '';
+    this.url = rawFilter.url || '';
+    this.permalink = rawFilter.permalink || '';
+    this.title = rawFilter.title || '';
+    this.author = rawFilter.author || '';
+
+    //Value filters
+    this.score = rawFilter.score || -1;
+    this.comments = rawFilter.comments || -1;
+    this.age = rawFilter.age || -1;
 
     //If string contains content, return true
     var stringFilter = function(str, content) {
