@@ -109,9 +109,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 	    (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
 
-		    //Take all posts and turn them into redditPost objects
+		    //Take all posts and turn them into RedditPost objects
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
-			return new redditPost(post);
+			return new RedditPost(post);
 		    });
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
@@ -234,7 +234,7 @@ Watcher.prototype.logEmailError = function(error, response, body) {
     if(body) log("Body: " + JSON.stringify(body));
 };
 
-function redditPost(rawPost) {
+function RedditPost(rawPost) {
     rawPost = rawPost.data;
     this.domain = rawPost.domain;
     this.subreddit = rawPost.subreddit;
@@ -264,7 +264,7 @@ function redditPost(rawPost) {
     };
 }
 
-redditPost.prototype.equals = function(post) {
+RedditPost.prototype.equals = function(post) {
     if(!post)
 	return false;
     return (this.permalink == post.permalink);
