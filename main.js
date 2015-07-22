@@ -260,13 +260,56 @@ function redditPost(rawPost) {
 	else
 	    return hours + ' hour(s) ' + minutes + ' minute(s)';
     };
-}
+};
 
 redditPost.prototype.equals = function(post) {
     if(!post)
 	return false;
     return (this.permalink == post.permalink);
-}    
+};
+
+function Filter(rawFilter) {
+    this.domain = rawFilter.domain;
+    this.title = rawFilter.title;
+    this.url = rawFilter.url;
+    this.permalink = rawFilter.permalink;
+    this.title = rawFilter.title;
+    this.author = rawFilter.author;
+    this.score = rawFilter.score;
+    this.comments = rawFilter.comments;
+    this.age = rawFilter.age;
+
+    //If string contains content, return true
+    var stringFilter = function(str, content) {
+	str = str.toLowerCase();
+	if(!content) return true;
+	
+	if(Array.isArray(content)) {
+	    //'anyString'.contains('') returns true
+	    for(var i = 0; i < content.length; i++)
+		if(!str.contains(content[i])) return false;
+	    return true;
+	}
+	return str.contains(content);
+    };
+    
+    this.test = function(post) {
+	if(this.score > post.score) return false;
+	if(this.comments > post.comments) return false;
+	if(this.age > post.age()) return false;
+	
+	//All string filters are the same
+	for (var prop in post) {
+	    var value = post[prop];
+	    if(typeof value === 'string' || value instanceof String) {
+		if(!stringFilter(value, this[prop])) return false;
+	    }
+	}
+	
+	//All filters passed
+	return true;
+    };
+};
 
 function main() {
     var watchers = [];
@@ -277,6 +320,6 @@ function main() {
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
     log('Watchit is now running.');
-}
+};
 
 main();
