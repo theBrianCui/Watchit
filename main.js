@@ -26,8 +26,7 @@ if(!supportedServices[service]) {
 
 if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
     log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
-	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file, or\n"	
-	+ "provide one as a command line argument ( --key=yourkeyhere ).\n"
+	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"	
 	+ "Check out the README.md file for more information on how to get one.");
     process.exit(1);
 }
@@ -118,9 +117,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 	    (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
 
-		    //Take all posts and turn them into redditPost objects
+		    //Take all posts and turn them into RedditPost objects
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
-			return new redditPost(post);
+			return new RedditPost(post);
 		    });
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
@@ -158,8 +157,8 @@ Watcher.prototype.composeEmail = function(posts) {
     posts.forEach((function(post) {
 	response += ('<p>' + this.email.body
 		     .replace('[title]', post.title)
-		     .replace('[url]', post.url)
-		     .replace('[permalink]', post.permalink)
+		     .replace('[url]', (post.selfPost ? '(text only/self post)' : post.url))
+		     .replace('[permalink]', 'http://reddit.com' + post.permalink)
 		     + '</p>');
     }).bind(this))
     return response;
@@ -243,7 +242,7 @@ Watcher.prototype.logEmailError = function(error, response, body) {
     if(body) log("Body: " + JSON.stringify(body));
 };
 
-function redditPost(rawPost) {
+function RedditPost(rawPost) {
     rawPost = rawPost.data;
     this.domain = rawPost.domain;
     this.subreddit = rawPost.subreddit;
@@ -252,10 +251,13 @@ function redditPost(rawPost) {
     this.title = rawPost.title;
     this.author = rawPost.author;
     this.score = rawPost.score;
+    this.selfPost = rawPost.is_self;
+    this.selfText = rawPost.selftext;
     this.comments = rawPost.num_comments;
-    this.created_time = rawPost.created_utc;
+    this.over18 = rawPost.over_18;
+    this.createdAt = rawPost.created_utc;
     this.age = function() {
-	return Math.floor((new Date).getTime()/1000) - this.created_time;
+	return Math.floor((new Date).getTime()/1000) - this.createdAt;
     };
     this.ageString = function() {
 	var age = this.age();
@@ -270,7 +272,7 @@ function redditPost(rawPost) {
     };
 };
 
-redditPost.prototype.equals = function(post) {
+RedditPost.prototype.equals = function(post) {
     if(!post)
 	return false;
     return (this.permalink == post.permalink);
