@@ -315,12 +315,13 @@ function Filter(rawFilter) {
 	if(!content) return true;
 	
 	if(Array.isArray(content)) {
-	    //'anyString'.contains('') returns true
-	    for(var i = 0; i < content.length; i++)
-		if(str.indexOf(content[i]) !== -1) return false;
-	    return true;
+	    //'anyString'.indexOf('') returns true
+	    for(var i = 0; i < content.length; i++) {
+		if(str.indexOf(content[i].toLowerCase()) != -1) return true;
+	    }
+	    return false;
 	}
-	return str.indexOf(content);
+	return str.indexOf(content.toLowerCase()) == -1;
     };
     
     this.test = function(post) {
@@ -332,10 +333,12 @@ function Filter(rawFilter) {
 	for (var prop in this) {
 	    var value = post[prop];
 	    if(typeof value === 'string' || value instanceof String) {
-		if(!stringFilter(value, this[prop])) return false;
+		if(!stringFilter(value, this[prop])) {
+		    return false;
+		}
 	    }
 	}
-	
+
 	//All filters passed
 	return true;
     };
