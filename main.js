@@ -121,6 +121,23 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
 			return new RedditPost(post);
 		    });
+		    log(loadedPosts.length + ' were loaded from ' + this.subreddit);
+		    
+		    //Filter loadedPosts
+		    loadedPosts = loadedPosts.filter((function (post) {
+
+			var filterCount = this.filters.length;
+			//At least one filter must pass
+			if(filterCount > 0) {
+			    for(var u = 0; u < filterCount; u++)
+				if(this.filters[0].test(post)) return true;
+			    return false;
+			}
+
+			//If no filters are defined, let all posts pass
+			return true;
+		    }).bind(this));
+		    log(loadedPosts.length + ' pass the filters defined for ' + this.subreddit);
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
 		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
@@ -300,7 +317,7 @@ function Filter(rawFilter) {
 	if(Array.isArray(content)) {
 	    //'anyString'.contains('') returns true
 	    for(var i = 0; i < content.length; i++)
-		if(!str.contains(content[i])) return false;
+		if(str.indexOf(content[i]) !== -1) return false;
 	    return true;
 	}
 	return str.contains(content);
@@ -312,7 +329,7 @@ function Filter(rawFilter) {
 	if(this.age > post.age()) return false;
 	
 	//All string filters are the same
-	for (var prop in post) {
+	for (var prop in this) {
 	    var value = post[prop];
 	    if(typeof value === 'string' || value instanceof String) {
 		if(!stringFilter(value, this[prop])) return false;
