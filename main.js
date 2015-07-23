@@ -149,7 +149,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			    break;
 		    }
 
-		    log(newPosts.length + ' new posts were found on ' + this.subreddit);
+		    log(newPosts.length + ' new, filtered posts were found on ' + this.subreddit);
 		    if(newPosts.length > 0) {
 			log('The newest post is ' + newPosts[0].ageString() + ' old.');
 			var message = this.composeEmail(newPosts);
@@ -320,7 +320,7 @@ function Filter(rawFilter) {
 		if(str.indexOf(content[i]) !== -1) return false;
 	    return true;
 	}
-	return str.contains(content);
+	return str.indexOf(content);
     };
     
     this.test = function(post) {
