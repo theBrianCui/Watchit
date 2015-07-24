@@ -109,9 +109,6 @@ function Watcher(configWatcher) {
 	});
     }
     log(this.subreddit + ' watcher has ' + this.filters.length + ' filters.');
-
-    for(var i = 0; i < this.filters.length; i++)
-	log('Filter ' + i + ': ' + JSON.stringify(this.filters[i]));
 };
 
 Watcher.prototype.checkSubreddit = function (callback) {
@@ -133,7 +130,6 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			//At least one filter must pass
 			if(filterCount > 0) {
 			    for(var u = 0; u < filterCount; u++) {
-				log("Testing filter " + u);
 				if(this.filters[u].test(post)) return true;
 			    }
 			    return false;
@@ -330,26 +326,20 @@ function Filter(rawFilter) {
     };
     
     this.test = function(post) {
-	log("Testing " + JSON.stringify(this) + " against " + JSON.stringify(post));
 	if(this.score > post.score) return false;
-	log("Score filter passed");
 	if(this.comments > post.comments) return false;
-	log("Comment filter passed");
 	if(this.age > post.age()) return false;
-	log("Age filter passed");
 	
 	//All string filters are the same
 	for (var prop in this) {
 	    var value = post[prop];
 	    if(typeof value === 'string' || value instanceof String) {
 		if(!stringFilter(value, this[prop])) {
-		    log(value + " did not contain " + this[prop]);
 		    return false;
 		}
 	    }
 	}
 
-	log("All filters passed.");
 	//All filters passed
 	return true;
     };
