@@ -121,7 +121,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
 			return new RedditPost(post);
 		    });
-		    log(this.subreddit + ': ' + loadedPosts.length + ' posts loaded');
+		    log(this.subreddit + ': ' + loadedPosts.length + ' posts loaded.');
 		    
 		    //Filter loadedPosts
 		    loadedPosts = loadedPosts.filter((function (post) {
@@ -139,7 +139,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			return true;
 		    }).bind(this));
 		    log(this.subreddit + ': ' + loadedPosts.length + ' posts remain after applying '
-			+ this.filters.length + ' filters');
+			+ this.filters.length + ' filters.');
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
 		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
@@ -151,9 +151,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			    break;
 		    }
 
-		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new');
+		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new.');
 		    if(newPosts.length > 0) {
-			log(this.subreddit + ': The newest post is ' + newPosts[0].ageString() + ' old.');
+			log(this.subreddit + ': ' + newPosts[0].ageString() + ' is the age of the newest filtered post.');
 			var message = this.composeEmail(newPosts);
 			this.sendEmail(this.email.subject.replace('[subreddit]', this.subreddit),
 				       message);
@@ -248,12 +248,12 @@ Watcher.prototype.sendEmail = function (subject, body) {
 
 Watcher.prototype.logEmailSuccess = function() {
     log(this.subreddit + ': Successfully sent alert email to '
-	+ this.email.to + ' via ' + supportedServices[service]);
+	+ this.email.to + ' via ' + supportedServices[service] + '.');
 };
 
 Watcher.prototype.logEmailError = function(error, response, body) {
     log(this.subreddit + ': Failed to deliver alert email to '
-	+ this.email.to + ' via ' + supportedServices[service]);
+	+ this.email.to + ' via ' + supportedServices[service] + '.');
     
     if(error) log("Error: " + JSON.stringify(error));
     if(response) log("Response: " + JSON.stringify(response));
