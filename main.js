@@ -121,7 +121,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
 			return new RedditPost(post);
 		    });
-		    log(loadedPosts.length + ' were loaded from ' + this.subreddit);
+		    log(this.subreddit + ': ' + loadedPosts.length + ' posts loaded');
 		    
 		    //Filter loadedPosts
 		    loadedPosts = loadedPosts.filter((function (post) {
@@ -138,7 +138,8 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			//If no filters are defined, let all posts pass
 			return true;
 		    }).bind(this));
-		    log(loadedPosts.length + ' pass the filters defined for ' + this.subreddit);
+		    log(this.subreddit + ': ' + loadedPosts.length + ' posts after applying '
+			+ this.filters.length + ' filters');
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
 		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
@@ -152,7 +153,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 
 		    log(newPosts.length + ' new, filtered posts were found on ' + this.subreddit);
 		    if(newPosts.length > 0) {
-			log('The newest post is ' + newPosts[0].ageString() + ' old.');
+			log(this.subreddit + ': The newest post is ' + newPosts[0].ageString() + ' old.');
 			var message = this.composeEmail(newPosts);
 			this.sendEmail(this.email.subject.replace('[subreddit]', this.subreddit),
 				       message);
@@ -161,10 +162,10 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    this.oldPosts = loadedPosts;
 		    
 		} else {
-		    log("Subreddit " + this.subreddit + " read failure!");
-		    log("error" + JSON.stringify(error));
-		    log("response" + JSON.stringify(response));
-		    log("body" + JSON.stringify(body));
+		    log(this.subreddit + ': Reddit read failure!');
+		    log('Error: ' + JSON.stringify(error));
+		    log('Response: ' + JSON.stringify(response));
+		    log('Body: ' + JSON.stringify(body));
 		}
 		callback();
 	    }).bind(this));
@@ -246,15 +247,14 @@ Watcher.prototype.sendEmail = function (subject, body) {
 };
 
 Watcher.prototype.logEmailSuccess = function() {
-    log("Successfully sent " + this.subreddit
-	+ " alert email to " + this.email.to
-	+ " via " + supportedServices[service]);
+    log(this.subreddit + ': Successfully sent alert email to '
+	+ this.email.to + ' via ' + supportedServices[service]);
 };
 
 Watcher.prototype.logEmailError = function(error, response, body) {
-    log("Failed to send " + this.subreddit
-	+ " alert email to " + this.email.to
-	+ "via " + supportedServices[service]);
+    log(this.subreddit + ': Failed to deliver alert email to '
+	+ this.email.to + ' via ' + supportedServices[service]);
+    
     if(error) log("Error: " + JSON.stringify(error));
     if(response) log("Response: " + JSON.stringify(response));
     if(body) log("Body: " + JSON.stringify(body));
