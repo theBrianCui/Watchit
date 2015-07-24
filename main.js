@@ -322,7 +322,7 @@ function Filter(rawFilter) {
 	    }
 	    return false;
 	}
-	return str.indexOf(content.toLowerCase()) == -1;
+	return str.indexOf(content.toLowerCase()) != -1;
     };
     
     this.test = function(post) {
