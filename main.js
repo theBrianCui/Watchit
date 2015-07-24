@@ -112,7 +112,7 @@ function Watcher(configWatcher) {
 };
 
 Watcher.prototype.checkSubreddit = function (callback) {
-    log('Checking ' + this.subreddit + ' for new posts...');
+    log(this.subreddit + ': Checking for new posts...');
     request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
 	    (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
@@ -138,7 +138,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			//If no filters are defined, let all posts pass
 			return true;
 		    }).bind(this));
-		    log(this.subreddit + ': ' + loadedPosts.length + ' posts after applying '
+		    log(this.subreddit + ': ' + loadedPosts.length + ' posts remain after applying '
 			+ this.filters.length + ' filters');
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
@@ -151,7 +151,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			    break;
 		    }
 
-		    log(newPosts.length + ' new, filtered posts were found on ' + this.subreddit);
+		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new');
 		    if(newPosts.length > 0) {
 			log(this.subreddit + ': The newest post is ' + newPosts[0].ageString() + ' old.');
 			var message = this.composeEmail(newPosts);
