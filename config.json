@@ -8,7 +8,7 @@
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
-		"subject": "Watchit: [subreddit] Alert! [summary]",
+		"subject": "Watchit: {subreddit} Alert! {count} new posts",
 		"body": "[title]<br/>[url]<br/>[permalink]"
 	    },
 	    "filters": [
