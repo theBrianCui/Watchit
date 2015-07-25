@@ -163,7 +163,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 
 		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new.');
 		    if(newPosts.length > 0) {
-			log(this.subreddit + ': ' + newPosts[0].ageString() + ' is the age of the newest filtered post.');
+			log(this.subreddit + ': ' + newPosts[0].ageString + ' is the age of the newest filtered post.');
 			var message = this.composeEmail(newPosts);
 
 			var subject = this.email.subject;
@@ -289,11 +289,13 @@ function RedditPost(rawPost) {
     this.comments = rawPost.num_comments;
     this.over18 = rawPost.over_18;
     this.createdAt = rawPost.created_utc;
-    this.age = function() {
+    
+    this.age = (function() {
 	return Math.floor((new Date).getTime()/1000) - this.createdAt;
-    };
-    this.ageString = function() {
-	var age = this.age();
+    }).call(this);
+
+    this.ageString = (function() {
+	var age = this.age;
 	
 	var hours = Math.floor(age/3600);
 	var minutes = Math.floor((age - (hours * 3600))/60);
@@ -302,7 +304,7 @@ function RedditPost(rawPost) {
 	    return '<1 minute';
 	else
 	    return hours + ' hour(s) ' + minutes + ' minute(s)';
-    };
+    }).call(this);
 };
 
 RedditPost.prototype.equals = function(post) {
@@ -354,7 +356,7 @@ function Filter(rawFilter) {
 	//Compare values
 	if(this.score > post.score) return false;
 	if(this.comments > post.comments) return false;
-	if(this.age > post.age()) return false;
+	if(this.age > post.age) return false;
 	
 	//All string filters are the same
 	for (var prop in this) {
