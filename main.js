@@ -304,11 +304,16 @@ function Filter(rawFilter) {
     this.permalink = rawFilter.permalink || '';
     this.title = rawFilter.title || '';
     this.author = rawFilter.author || '';
+    this.selfText = rawFilter.selfText || '';
 
     //Value filters
     this.score = rawFilter.score || -1;
     this.comments = rawFilter.comments || -1;
     this.age = rawFilter.age || -1;
+
+    //Boolean filters
+    this.selfPost = (typeof rawFilter.selfPost === 'boolean') ? rawFilter.selfPost : null;
+    this.over18 = (typeof rawFilter.over18 === 'boolean') ? rawFilter.over18 : null;
 
     //If string contains content, return true
     var stringFilter = function(str, content) {
@@ -326,6 +331,12 @@ function Filter(rawFilter) {
     };
     
     this.test = function(post) {
+	//Compare booleans
+	//If the filter value is unset, don't check
+	if((this.selfPost != null) && this.selfPost !== post.selfPost) return false;
+	if((this.over18 != null) && this.over18 !== post.over18) return false;
+
+	//Compare values
 	if(this.score > post.score) return false;
 	if(this.comments > post.comments) return false;
 	if(this.age > post.age()) return false;

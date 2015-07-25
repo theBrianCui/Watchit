@@ -35,6 +35,11 @@
 		"subject": "Watchit: [subreddit] Alert! [summary]",
 		"body": "[title]<br/>[url]<br/>[permalink]"
 	    },
+	    "filters": [
+		{
+		    "selfPost": false
+		}
+	    ],
 	    "alertOnFailures": 6
 	}
     ]
