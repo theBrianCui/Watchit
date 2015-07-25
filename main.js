@@ -187,15 +187,26 @@ Watcher.prototype.checkSubreddit = function (callback) {
 };
 
 Watcher.prototype.composeEmail = function(posts) {
-    var response = '';
-    posts.forEach((function(post) {
-	response += ('<p>' + this.email.body
-		     .replace('[title]', post.title)
-		     .replace('[url]', (post.selfPost ? '(text only/self post)' : post.url))
-		     .replace('[permalink]', 'http://reddit.com' + post.permalink)
-		     + '</p>');
-    }).bind(this))
-    return response;
+    var body = this.email.body;
+    var bodyPosts = '';
+
+    for(var i = 0; i < posts.length; i++){
+	var post = posts[i];
+
+	//Any post property saved should be substituted in the template
+	var postReplacements = {};
+	for(var prop in post) {
+	    var value = post[prop];
+	    if(typeof value === 'string' || value instanceof String)
+		postReplacements['{' + prop + '}'] = post[prop];
+	}
+	
+	bodyPosts += replaceAll(this.email.post, postReplacements);
+    }
+
+    var replacements = {};
+    replacements['{posts}'] = bodyPosts;
+    return replaceAll(body, replacements);
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
@@ -279,8 +290,8 @@ function RedditPost(rawPost) {
     rawPost = rawPost.data;
     this.domain = rawPost.domain;
     this.subreddit = rawPost.subreddit;
-    this.url = rawPost.url;
-    this.permalink = rawPost.permalink;
+    this.url = (rawPost.is_self ? '(text only/self post)' : rawPost.url);
+    this.permalink = 'http://reddit.com' + rawPost.permalink;
     this.title = rawPost.title;
     this.author = rawPost.author;
     this.score = rawPost.score;

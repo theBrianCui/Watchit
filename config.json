@@ -9,15 +9,14 @@
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
 		"subject": "Watchit: {subreddit} Alert! {count} new posts",
-		"body": "{title}<br/>{url}<br/>{permalink}"
+		"body": "{posts}",
+		"post": "<p>{title}<br/>{url}<br/>{permalink}</p>"
 	    },
 	    "filters": [
 		{
 		    "domain": ["amazon", "newegg", "evga", "gpushack",
 			       "staples", "ebay", "bestbuy"],
-		    "title": ["GPU"],
-		    "score": 20,
-		    "age": 7200
+		    "title": ["GPU"]
 		},
 		{
 		    "score": 100,
@@ -33,7 +32,8 @@
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
 		"subject": "Watchit: [subreddit] Alert! [summary]",
-		"body": "[title]<br/>[url]<br/>[permalink]"
+		"body": "{posts}",
+		"post": "<p>{title}<br/>{url}<br/>{permalink}</p>"
 	    },
 	    "filters": [
 		{
