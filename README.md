@@ -1,5 +1,5 @@
 # Watchit
-A Node.js app that watches any number of subreddits and delivers email notifications for new, filtered Reddit posts. It's totally free and is available (self-hosted) for Windows, Mac, and Linux. Features support for...
+A self-hosted Node.js app that watches any number of subreddits and delivers email notifications for new, filtered Reddit posts. It's totally free and is available (self-hosted) for Windows, Mac, and Linux. Features support for...
 
 - **Unlimited subreddits**. Want to get notifications for new posts on both [/r/buildapcsales](https://www.reddit.com/r/buildapcsales/new/) and [/r/gamedeals](https://www.reddit.com/r/gamedeals/new/)? Watchit can check as many subreddits as you want on a single instance, with a unique configuration for each, and will even queue its requests appropriately so it doesn't hog bandwidth.
 - **Unlimited filters**. Get notified only for the posts you deem worthy. Configure notifications for posts based on age, votes, title, self-post text, and more.
@@ -8,9 +8,14 @@ A Node.js app that watches any number of subreddits and delivers email notificat
 
 Quick Setup Guide
 -----------
-The fastest way to get up and running is to download the precompiled executables which have JXCore (a fork of Node.js) built in. If you would like to run Watchit directly from the source, scroll down to the For Developers section below.
+The fastest way to get up and running is to download the precompiled executables. These have JXCore, a fork of Node.js, built in so you don't have to have Node.js installed to run Watchit. If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
 
-**How to set up Watchit + MailGun for email sending (Free)**
+
+----------
+
+
+Using MailGun for Email Sending (Free)
+------------------------------------------------------------
 
 Watchit supports the [MailGun](https://mailgun.com/) email service, which offers a free plan of 10,000 emails a month. If you already have a MailGun account, sign in and then skip. Otherwise, to get a free MailGun account and a corresponding API key, do the following:
 
@@ -23,7 +28,12 @@ Watchit supports the [MailGun](https://mailgun.com/) email service, which offers
 
 If you do not own the domain name you plan to send emails with, Mailgun will limit you to 300 emails a day. If you own a domain name, it is strongly recommended that you [register your domain with Mailgun](https://mailgun.com/app/domains/new) to avoid having your emails marked as spam or phishing attempts.
 
-**How to set up Watchit + SendGrid for email sending (Free)**
+
+----------
+
+
+Using SendGrid for Email Sending (Free)
+---------------
 
 Watchit supports the [SendGrid](https://sendgrid.com/) email service, which offers a free plan of 12,000 emails a month. If you already have a SendGrid account, sign in and then skip to step 4. Otherwise, to get a free SendGrid account and a corresponding API key, do the following:
 
@@ -39,7 +49,12 @@ Watchit supports the [SendGrid](https://sendgrid.com/) email service, which offe
 If you lose or forget your SendGrid API key, you can always create a new one by repeating steps 4-6. If you own a domain name, it is highly recommended that [you register your domain with 
 SendGrid](https://sendgrid.com/docs/User_Guide/Settings/Whitelabel/domains.html). This will reduce the likelihood of your emails appearing as spam or as phishing attempts.
 
-**How to set up Watchit + Mandrill for email sending (Trial, then Paid)**
+
+----------
+
+
+Using Mandrill for Email Sending (Trial/Paid)
+----------
 
 Watchit supports the [Mandrill](https://mandrill.com/signup/) email service, but they no longer offers a free plan. They offer 2000 free trial sends and then monthly volume based pricing afterwards. Their sign up process is the easiest of all services supported by Watchit:
 
@@ -53,6 +68,10 @@ Watchit supports the [Mandrill](https://mandrill.com/signup/) email service, but
 If you own a domain name, it is highly recommend that you [register your domain with Mandrill](https://mandrillapp.com/settings/sending-domains) for sending. This will reduce the likelihood of your emails appearing as spam or phishing attempts.
 
 # For Developers
+
+To run Watchit from source, you will need to have Node.js installed. There are [instructions available for every operating system at the Node.js website.](https://nodejs.org/download/) Clone the Watchit repository, and in the root folder, run Watchit with the following terminal command:
+
+`node main.js`
 
 **How to compile Watchit into a standalone binary executable**
 
