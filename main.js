@@ -211,6 +211,10 @@ Watcher.prototype.composeEmail = function(posts) {
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
+    //Cut off a subject that ends up being too long
+    if(subject !== subject.substring(0, 77))
+	subject = subject.substring(0, 74) + '...';
+    
     if(service == "sendgrid") {
 	sendgrid.send(new sendgrid.Email({
 	    to: this.email.to,
