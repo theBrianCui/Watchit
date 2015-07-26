@@ -9,7 +9,7 @@
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
 		"subject": "Watchit: {subreddit} Alert! {count} new posts",
-		"body": "{posts}",
+		"body": "<p>{count} new posts were found on {subreddit}:</p>{posts}",
 		"post": "<p>{title}<br/>{url}<br/>{permalink}<br/>{ageString}<br/>{comments} comments, expired: {over18}</p>"
 	    },
 	    "filters": [

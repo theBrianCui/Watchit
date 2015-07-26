@@ -164,13 +164,13 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new.');
 		    if(newPosts.length > 0) {
 			log(this.subreddit + ': ' + newPosts[0].ageString + ' is the age of the newest filtered post.');
-			var message = this.composeEmail(newPosts);
 
-			var subject = this.email.subject;
 			var replacements = {};
 			replacements['{subreddit}'] = this.subreddit;
 			replacements['{count}'] = newPosts.length;
-			subject = replaceAll(this.email.subject, replacements);
+			
+			var message = replaceAll(this.composeEmail(newPosts), replacements);
+			var subject = replaceAll(this.email.subject, replacements);
 			this.sendEmail(subject, message);
 		    }
 
