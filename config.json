@@ -8,7 +8,7 @@
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
-		"subject": "Watchit: {subreddit} Alert! {count} new posts",
+		"subject": "Watchit: {subreddit} Alert! {count} new posts. {titles}",
 		"body": "<p>{count} new posts were found on {subreddit}:</p>{posts}",
 		"post": "<p>{title}<br/>{url}<br/>{permalink}<br/>{ageString}<br/>{comments} comments, expired: {over18}</p>"
 	    },
@@ -22,7 +22,7 @@
 		    "score": 100,
 		    "comments": 16
 		}	
-    ],
+	    ],
 	    "alertOnFailures": 6
 	},
 	{
@@ -31,14 +31,11 @@
 	    "email": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
-		"subject": "Watchit: [subreddit] Alert! [summary]",
+		"subject": "Watchit: {subreddit} Alert! {count} new posts. {titles}",
 		"body": "{posts}",
-		"post": "<p>{title}<br/>{url}<br/>{permalink}</p>"
+		"post": "<p>{title}<br/>{url}<br/>{permalink}</p><p>{selfText}</p>"
 	    },
 	    "filters": [
-		{
-		    "selfPost": false
-		}
 	    ],
 	    "alertOnFailures": 6
 	}

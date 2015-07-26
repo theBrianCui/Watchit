@@ -155,10 +155,13 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
 		    var newPosts = [];
 		    for(var k = 0; k < loadedPosts.length; k++) {
-			if(!loadedPosts[k].equals(this.oldPosts[0]))
+			if(!loadedPosts[k].equals(this.oldPosts[0])) {
 			    newPosts.push(loadedPosts[k])
-			else
+			} else {
+			    //When we reach a matching post, we know the rest of the posts will match
+			    //This works because posts are sorted by age
 			    break;
+			}
 		    }
 
 		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new.');
@@ -168,6 +171,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			var replacements = {};
 			replacements['{subreddit}'] = this.subreddit;
 			replacements['{count}'] = newPosts.length;
+			replacements['{titles}'] = (newPosts.map(function (post) {
+			    return post.title;
+			})).join(', ');
 			
 			var message = replaceAll(this.composeEmail(newPosts), replacements);
 			var subject = replaceAll(this.email.subject, replacements);
