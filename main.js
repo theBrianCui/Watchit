@@ -197,10 +197,11 @@ Watcher.prototype.composeEmail = function(posts) {
 	var postReplacements = {};
 	for(var prop in post) {
 	    var value = post[prop];
-	    if(typeof value === 'string' || value instanceof String)
-		postReplacements['{' + prop + '}'] = post[prop];
+	    //Skip functions
+	    if(Object.prototype.toString.call(value) != '[object Function]')
+		postReplacements['{' + prop.toLowerCase() + '}'] = post[prop];
 	}
-	
+
 	bodyPosts += replaceAll(this.email.post, postReplacements);
     }
 
