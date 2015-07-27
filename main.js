@@ -1,10 +1,23 @@
 var config = require('./config.json');
+var fs = require('fs');
 var argv = require('yargs').argv;
 var request = require('request');
 
-function log(message) {
-    console.log((new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19)
-		+ " : " + message);
+function log(message, debug) {
+    message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
+    if(!argv.d || !debug || debug <= argv.d) {
+	console.log(message);
+	
+	if(argv.l) {
+	    fs.appendFile('Watchit.log', message + '\n', function(err) {
+		if(err) {
+		    argv.l = false;
+		    log('Error: could not write to file Watchit.log. ' + err);
+		    log('Disabling logging mode.');
+		}
+	    });
+	}
+    }
 }
 
 log("Launching Watchit!");
