@@ -1,17 +1,43 @@
 var config = require('./config.json');
 var fs = require('fs');
-var argv = require('yargs').argv;
 var request = require('request');
+
+//Interpret arguments
+var argList = process.argv;
+if(process.IsEmbedded) argList.unshift(process.argv[0]);
+var argv = {
+    log: false,
+    key: '',
+    debug: 0
+};
+
+for(var arg in argv) {
+    switch (typeof argv[arg]) {
+    case 'boolean':
+	argv[arg] = (argList.indexOf('-' + arg.charAt(0)) !== -1
+		     || argList.indexOf('--' + arg) !== -1);
+	break;
+    case 'string':
+    case 'number':
+	var index = argList.indexOf('-' + arg.charAt(0));
+	if(index === -1) index = argList.indexOf('--' + arg);
+	//A bit silly, but -1 isn't falsy and we have to get the actual index value
+	if(index !== -1 && argList[index + 1] != null && !(/^-{1,2}[a-z]+$/g.test(argList[index + 1]))) {
+	    argv[arg] = argList[index + 1];
+	}
+	break;
+    }
+}
 
 function log(message, debug) {
     message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
-    if(!argv.d || !debug || debug <= argv.d) {
+    if(!argv.debug || !debug || debug <= argv.debug) {
 	console.log(message);
 	
-	if(argv.l) {
+	if(argv.log) {
 	    fs.appendFile('Watchit.log', message + '\n', function(err) {
 		if(err) {
-		    argv.l = false;
+		    argv.log = false;
 		    log('Error: could not write to file Watchit.log. ' + err);
 		    log('Disabling logging mode.');
 		}
