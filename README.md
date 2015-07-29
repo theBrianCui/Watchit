@@ -8,8 +8,11 @@ A self-hosted Node.js app that watches any number of subreddits and delivers ema
 
 Quick Setup Guide
 -----------
-The fastest way to get up and running is to download the precompiled executables. These have JXCore, a fork of Node.js, built in so you don't have to have Node.js installed to run Watchit. If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
+The fastest way to get up and running is to download the precompiled executables, compiled with JXCore. If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
 
+ 1. Download and extract the archive containing the executable and configuration files for your platform.
+ 2. Obtain an email provider API key from one of the following services: MailGun (free, recommended), Sendgrid (free), or Mandrill (trial/paid). Instructions for each service can be found below. If you already have an account at any of these providers, you can generate a new API key using your existing account.
+ 3. Open the configuration file `config.json` and set the `apikey` value to the one you obtained from step 2. Then, set the `service` key to `mailgun`, `sendgrid`, or `mandrill` depending on the service your API key belongs to.
 
 ----------
 
@@ -69,9 +72,15 @@ If you own a domain name, it is highly recommend that you [register your domain 
 
 # For Developers
 
-To run Watchit from source, you will need to have Node.js installed. There are [instructions available for every operating system at the Node.js website.](https://nodejs.org/download/) Clone the Watchit repository, and in the root folder, run Watchit with the following terminal command:
+To run Watchit from source, you will need to have [Node.js installed.](https://nodejs.org/download/) Clone the Watchit repository, setup your `config.json` (see above), and run Watchit with the following terminal command:
 
 `node main.js`
+
+**Launch Options/Arguments**
+
+ - `--key [your-API-key]` (short: `-k`): Overrides the API key provided in `config.json` with the one provided.
+ - `--debug [number]` (short `-d`): Enable additional debug messages. The higher the number (up to 3), the more messages are printed to the console.
+ - `--log` (short `-d`): Enables logging console output to a local file, `Watchit.log`.
 
 **How to compile Watchit into a standalone binary executable**
 
