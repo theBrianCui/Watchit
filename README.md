@@ -8,10 +8,10 @@ A self-hosted Node.js app that watches any number of subreddits and delivers ema
 
 Quick Setup Guide
 -----------
-The fastest way to get up and running is to download the precompiled executables, compiled with JXCore. If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
+The fastest way to get up and running is to download the precompiled executables, compiled with [JXCore](jxcore.com). If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
 
- 1. Download and extract the archive containing the executable and configuration files for your platform.
- 2. Obtain an email provider API key from one of the following services: MailGun (free, recommended), Sendgrid (free), or Mandrill (trial/paid). Instructions for each service can be found below. If you already have an account at any of these providers, you can generate a new API key using your existing account.
+ 1. Download and extract the prebuilt archive for your platform.
+ 2. Obtain an API key from one of the following email services: MailGun (free, recommended), Sendgrid (free), or Mandrill (trial/paid). Instructions for each service can be found below.
  3. Open the configuration file `config.json` and set the `apikey` value to the one you obtained from step 2. Then, set the `service` key to `mailgun`, `sendgrid`, or `mandrill` depending on the service your API key belongs to.
 
 ----------
@@ -26,8 +26,8 @@ Watchit supports the [MailGun](https://mailgun.com/) email service, which offers
  2. On the *Success!* page, scroll down and click *Continue to your control panel*.
  3. The next page should show an orange banner at the top asking for email verification. Sign in to the email account you signed up with and click on the activation link sent to you by MailGun.
  4. With your account activated, open the [MailGun control panel](https://mailgun.com/app/dashboard) and scroll down to the *API Keys* box in the lower right. Click on *Show* next to the *Secret API key* to reveal your API key. Copy it to your clipboard.
- 5. Open the *config.json* file in the Watchit root directory. In the "apikey" key-value pair, replace the value "paste-your-api-key-here" with the API key from step 4 (without quotes).
- 6. Make sure the "service" key is set to "mailgun". You're all set!
+ 5. Open the `config.json` file in the Watchit root directory. In the `apikey` key-value pair, replace the value `paste-your-api-key-here` with the API key from step 4.
+ 6. Make sure the `service` key is set to `mailgun`. You're all set!
 
 If you do not own the domain name you plan to send emails with, Mailgun will limit you to 300 emails a day. If you own a domain name, it is strongly recommended that you [register your domain with Mailgun](https://mailgun.com/app/domains/new) to avoid having your emails marked as spam or phishing attempts.
 
@@ -46,8 +46,8 @@ Watchit supports the [SendGrid](https://sendgrid.com/) email service, which offe
  5. Click on *Settings* on the left menu, and then *API Keys*.
  6. Click *Create API Key* button. Give it a name and click *Save*.
  7. You will now be presented with a text API key. Copy this to your clipboard.
- 8. Open the *config.json* file in the Watchit root directory. In the "apikey" key-value pair, replace the value "paste-your-api-key-here" with the API key from step 7 (without quotes).
- 9. Make sure the "service" key is set to the value "sendgrid". You're all set!
+ 8. Open the `config.json` file in the Watchit root directory. In the `apikey` key-value pair, replace the value `paste-your-api-key-here` with the API key from step 7.
+ 9. Make sure the `service` key is set to the value `sendgrid`. You're all set!
 
 If you lose or forget your SendGrid API key, you can always create a new one by repeating steps 4-6. If you own a domain name, it is highly recommended that [you register your domain with 
 SendGrid](https://sendgrid.com/docs/User_Guide/Settings/Whitelabel/domains.html). This will reduce the likelihood of your emails appearing as spam or as phishing attempts.
@@ -65,8 +65,8 @@ Watchit supports the [Mandrill](https://mandrill.com/signup/) email service, but
  2. Complete, or skip, the detailed registration information. Then, click on the *Settings* tab in the left column.
  3. The SMTP & API Credentials page should open. Click on the *Add API Key* button.
  4. A new API key will be generated and appear in the *Key* column of the list. Copy this to your clipboard.
- 5. Open the *config.json* file in the Watchit root directory. In the "apikey" key-value pair, replace the value "paste-your-api-key-here" with the API key from step 4 (without quotes).
- 6. Make sure the "service" key is set to the value "mandrill". You're all set!
+ 5. Open the `config.json` file in the Watchit root directory. In the `apikey` key-value pair, replace the value `paste-your-api-key-here` with the API key from step 4.
+ 6. Make sure the `service` key is set to the value `mandrill`. You're all set!
 
 If you own a domain name, it is highly recommend that you [register your domain with Mandrill](https://mandrillapp.com/settings/sending-domains) for sending. This will reduce the likelihood of your emails appearing as spam or phishing attempts.
 
