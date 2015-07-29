@@ -8,7 +8,7 @@ A self-hosted Node.js app that watches any number of subreddits and delivers ema
 
 Quick Setup Guide
 -----------
-The fastest way to get up and running is to download the precompiled executables, compiled with [JXCore](jxcore.com). If you would like to run Watchit directly from the source, check out the [For Developers](#for-developers) section below.
+The fastest way to get up and running is to use the precompiled executables, compiled with [JXCore](jxcore.com). To run Watchit from source, check out the [For Developers](#for-developers) section below.
 
  1. Download and extract the prebuilt archive for your platform.
  2. Obtain an API key from one of the following email services: MailGun (free, recommended), Sendgrid (free), or Mandrill (trial/paid). Instructions for each service can be found below.
@@ -79,7 +79,7 @@ To run Watchit from source, you will need to have [Node.js installed.](https://n
 **Launch Options/Arguments**
 
  - `--key [your-API-key]` (short: `-k`): Overrides the API key provided in `config.json` with the one provided.
- - `--debug [number]` (short `-d`): Enable additional debug messages. The higher the number (up to 3), the more messages are printed to the console.
+ - `--debug [number]` (short `-d`): Enable additional debug messages. The higher the number (up to 3), the more messages are printed to the console. The default value is 0.
  - `--log` (short `-d`): Enables logging console output to a local file, `Watchit.log`.
 
 **How to compile Watchit into a standalone binary executable**
