@@ -81,6 +81,7 @@ To run Watchit from source, you will need to have [Node.js installed.](https://n
  - `--key [your-API-key]` (short: `-k`): Overrides the API key provided in `config.json` with the one provided.
  - `--debug [number]` (short `-d`): Enable additional debug messages. The higher the number (up to 3), the more messages are printed to the console. The default value is 0.
  - `--log` (short `-d`): Enables logging console output to a local file, `Watchit.log`.
+ - `--silent` (short `-s`): Enables silent mode, which turns off all console output. This does not affect logging output, if it is enabled.
 
 **How to compile Watchit into a standalone binary executable**
 
