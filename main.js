@@ -1,6 +1,7 @@
 var config = require('./config.json');
 var fs = require('fs');
 var request = require('request');
+var readlineSync = require('readline-sync');
 
 //Interpret arguments
 var argList = process.argv;
@@ -46,6 +47,11 @@ function log(message, debug) {
     }
 }
 
+function promptExit(code) {
+    readlineSync.keyIn('Press any key to exit...');
+    process.exit(code == null ? 0 : code);
+}
+
 log("Launching Watchit!");
 
 var supportedServices = {
@@ -60,14 +66,14 @@ if(argv.key)
 
 if(!supportedServices[service]) {
     log(service + " is not a supported email service. Please check the README.md file for details.");
-    process.exit(1);
+    promptExit(1);
 }
 
 if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
     log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
 	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"	
 	+ "Check out the README.md file for more information on how to get one.");
-    process.exit(1);
+    promptExit(1);
 }
 
 //Setup sendgrid
