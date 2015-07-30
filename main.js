@@ -8,6 +8,7 @@ var argList = process.argv;
 if(process.IsEmbedded) argList.unshift(process.argv[0]);
 var argv = {
     log: false,
+    silent: false,
     key: '',
     debug: 0
 };
@@ -30,11 +31,12 @@ for(var arg in argv) {
     }
 }
 
+//Monkey patching console.log isn't ideal, so we'll go with this instead
 function log(message, debug) {
-    message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
     if(!argv.debug || !debug || debug <= argv.debug) {
-	console.log(message);
+	message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
 	
+	if(!argv.silent) console.log(message);
 	if(argv.log) {
 	    fs.appendFile('Watchit.log', message + '\n', function(err) {
 		if(err) {
@@ -48,7 +50,8 @@ function log(message, debug) {
 }
 
 function promptExit(code) {
-    readlineSync.keyIn('Press any key to exit...');
+    log('Press any key to exit...');
+    readlineSync.keyIn();
     process.exit(code == null ? 0 : code);
 }
 
