@@ -33,7 +33,9 @@ for(var arg in argv) {
 
 //Monkey patching console.log isn't ideal, so we'll go with this instead
 function log(message, debug) {
-    if(!argv.debug || !debug || debug <= argv.debug) {
+    //The higher the value of `debug`, the less important it is
+    //If no argument is provided (or if 0), always log the message
+    if(!debug || debug <= argv.debug) {
 	message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
 	
 	if(!argv.silent) console.log(message);
@@ -233,10 +235,11 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    
 		} else {
 		    log(this.subreddit + ': Reddit read failure!');
-		    log('Error: ' + JSON.stringify(error));
-		    log('Response: ' + JSON.stringify(response));
-		    log('Body: ' + JSON.stringify(body));
+		    log(this.subreddit + ': Error: ' + JSON.stringify(error));
+		    log(this.subreddit + ': Response: ' + JSON.stringify(response), 1);
+		    log(this.subreddit + ': Body: ' + JSON.stringify(body));
 		}
+
 		callback();
 	    }).bind(this));
 };
@@ -340,10 +343,13 @@ Watcher.prototype.logEmailSuccess = function() {
 Watcher.prototype.logEmailError = function(error, response, body) {
     log(this.subreddit + ': Failed to deliver alert email to '
 	+ this.email.to + ' via ' + supportedServices[service] + '.');
+    log(this.subreddit + ': Check that the provided API key is valid, the chosen service is up, ' +
+	'and the from/to email addresses are valid.');
     
-    if(error) log("Error: " + JSON.stringify(error));
-    if(response) log("Response: " + JSON.stringify(response));
-    if(body) log("Body: " + JSON.stringify(body));
+    if(error) log(this.subreddit + ': Error: ' + JSON.stringify(error));
+    //The response tends to be long and confusing, so log it on debug level 1
+    if(response) log(this.subreddit + ': Response: ' + JSON.stringify(response), 1);
+    if(body) log(this.subreddit + ': Body: ' + JSON.stringify(body));
 };
 
 function RedditPost(rawPost) {
