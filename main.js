@@ -32,7 +32,8 @@ for(var arg in argv) {
 }
 
 //Monkey patching console.log isn't ideal, so we'll go with this instead
-function log(message, debug) {
+//We can call this.log anywhere, which will either refer to this prototype or the object's
+Object.prototype.log = function(message, debug) {
     //The higher the value of `debug`, the less important it is
     //If no argument is provided (or if 0), always log the message
     if(!debug || debug <= argv.debug) {
@@ -43,8 +44,8 @@ function log(message, debug) {
 	    fs.appendFile('Watchit.log', message + '\n', function(err) {
 		if(err) {
 		    argv.log = false;
-		    log('Error: could not write to file Watchit.log. ' + err);
-		    log('Disabling logging mode.');
+		    this.log('Error: could not write to file Watchit.log. ' + err);
+		    this.log('Disabling logging mode.');
 		}
 	    });
 	}
@@ -52,13 +53,13 @@ function log(message, debug) {
 }
 
 function promptExit(code) {
-    log('Press any key to exit...');
+    this.log('Press any key to exit...');
     if(!argv.silent)
 	readlineSync.keyIn();
     process.exit(code == null ? 0 : code);
 }
 
-log("Launching Watchit!");
+this.log("Launching Watchit!");
 
 var supportedServices = {
     sendgrid: "SendGrid",
@@ -71,12 +72,12 @@ if(argv.key)
     config.apikey = argv.key;
 
 if(!supportedServices[service]) {
-    log(service + " is not a supported email service. Please check the README.md file for details.");
+    this.log(service + " is not a supported email service. Please check the README.md file for details.");
     promptExit(1);
 }
 
 if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
-    log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
+    this.log("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
 	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"	
 	+ "Check out the README.md file for more information on how to get one.");
     promptExit(1);
@@ -96,7 +97,7 @@ if(service == "mailgun") {
     MailComposer = require("mailcomposer").MailComposer;
 }
 
-log(supportedServices[service] + " API Key: " + config.apikey);
+this.log(supportedServices[service] + " API Key: " + config.apikey);
 
 function Dispatcher(watchers) {
     var _lock = false;
@@ -169,11 +170,11 @@ function Watcher(configWatcher) {
 	    return new Filter(filter);
 	});
     }
-    log(this.subreddit + ' watcher has ' + this.filters.length + ' filters.');
+    this.log('This subreddit has ' + this.filters.length + ' filters.');
 };
 
 Watcher.prototype.checkSubreddit = function (callback) {
-    log(this.subreddit + ': Checking for new posts...');
+    this.log('Checking for new posts...');
     request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
 	    (function(error, response, body) {
 		if (!error && response.statusCode == 200) {
@@ -182,7 +183,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
 			return new RedditPost(post);
 		    });
-		    log(this.subreddit + ': ' + loadedPosts.length + ' posts loaded.');
+		    this.log('' + loadedPosts.length + ' posts loaded.');
 		    
 		    //Filter loadedPosts
 		    loadedPosts = loadedPosts.filter((function (post) {
@@ -199,7 +200,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			//If no filters are defined, let all posts pass
 			return true;
 		    }).bind(this));
-		    log(this.subreddit + ': ' + loadedPosts.length + ' posts remain after applying '
+		    this.log(loadedPosts.length + ' posts remain after applying '
 			+ this.filters.length + ' filters.');
 		    
 		    //Step through each post from the loadedPosts and compare with oldPosts
@@ -215,9 +216,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
 			}
 		    }
 
-		    log(this.subreddit + ': ' + newPosts.length + ' filtered posts are new.');
+		    this.log(newPosts.length + ' filtered posts are new.');
 		    if(newPosts.length > 0) {
-			log(this.subreddit + ': ' + newPosts[0].ageString + ' is the age of the newest filtered post.');
+			this.log(newPosts[0].ageString + ' is the age of the newest filtered post.');
 
 			var replacements = {};
 			replacements['{subreddit}'] = this.subreddit;
@@ -234,10 +235,10 @@ Watcher.prototype.checkSubreddit = function (callback) {
 		    this.oldPosts = loadedPosts;
 		    
 		} else {
-		    log(this.subreddit + ': Reddit read failure!');
-		    log(this.subreddit + ': Error: ' + JSON.stringify(error));
-		    log(this.subreddit + ': Response: ' + JSON.stringify(response), 1);
-		    log(this.subreddit + ': Body: ' + JSON.stringify(body));
+		    this.log('Reddit read failure!');
+		    this.log('Error: ' + JSON.stringify(error));
+		    this.log('Response: ' + JSON.stringify(response), 1);
+		    this.log('Body: ' + JSON.stringify(body));
 		}
 
 		callback();
@@ -335,21 +336,26 @@ Watcher.prototype.sendEmail = function (subject, body) {
     }
 };
 
+Watcher.prototype.log = function(message) {
+    //Call the global logger function
+    Object.prototype.log(this.subreddit + ': ' + message);
+};
+
 Watcher.prototype.logEmailSuccess = function() {
-    log(this.subreddit + ': Successfully sent alert email to '
+    this.log('Successfully sent alert email to '
 	+ this.email.to + ' via ' + supportedServices[service] + '.');
 };
 
 Watcher.prototype.logEmailError = function(error, response, body) {
-    log(this.subreddit + ': Failed to deliver alert email to '
+    this.log('Failed to deliver alert email to '
 	+ this.email.to + ' via ' + supportedServices[service] + '.');
-    log(this.subreddit + ': Check that the provided API key is valid, the chosen service is up, ' +
+    this.log('Check that the provided API key is valid, the chosen service is up, ' +
 	'and the from/to email addresses are valid.');
     
-    if(error) log(this.subreddit + ': Error: ' + JSON.stringify(error));
+    if(error) this.log('Error: ' + JSON.stringify(error));
     //The response tends to be long and confusing, so log it on debug level 1
-    if(response) log(this.subreddit + ': Response: ' + JSON.stringify(response), 1);
-    if(body) log(this.subreddit + ': Body: ' + JSON.stringify(body));
+    if(response) this.log('Response: ' + JSON.stringify(response), 1);
+    if(body) this.log('Body: ' + JSON.stringify(body));
 };
 
 function RedditPost(rawPost) {
@@ -460,7 +466,7 @@ function main() {
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
-    log('Watchit is now running.');
+    this.log('Watchit is now running.');
 };
 
 main();
