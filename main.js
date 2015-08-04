@@ -159,7 +159,7 @@ function replaceAll(str,mapObj){
 
 function Watcher(configWatcher) {
     this.subreddit = configWatcher.subreddit;
-    this.email = configWatcher.email;
+    this.email = configWatcher.emailTemplate;
     this.interval = configWatcher.interval;
     this.maxFailures = configWatcher.alertOnFailures;
     this.oldPosts = [];

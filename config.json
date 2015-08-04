@@ -1,11 +1,18 @@
 {
     "apikey":"paste-your-api-key-here",
     "service":"mandrill",
+    "defaultEmailTemplate": {
+	"from": "default.email.address@not.a.real.domain",
+	"to": "you@somewhere.place",
+	"subject": "Watchit: {subreddit} Alert! {count} new posts: {titles}",
+	"body": "<p>{count} new posts were found on {subreddit}:</p>{posts}",
+	"post": "<p>{title}<br/>{url}<br/>{permalink}<br/>{ageString}<br/>{comments} comments, expired: {over18}</p>"
+    },
     "watchers": [
 	{
 	    "subreddit": "buildapcsales",
 	    "interval": 5000,
-	    "email": {
+	    "emailTemplate": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
 		"subject": "Watchit: {subreddit} Alert! {count} new posts. {titles}",
@@ -28,7 +35,7 @@
 	{
 	    "subreddit": "thankssam",
 	    "interval": 12000,
-	    "email": {
+	    "emailTemplate": {
 		"from": "watchit.tests@gmail.com",
 		"to": "watchit.tests@gmail.com",
 		"subject": "Watchit: {subreddit} Alert! {count} new posts. {titles}",
