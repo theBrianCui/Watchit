@@ -460,6 +460,8 @@ function main() {
     var watchers = [];
     if(Array.isArray(config.watchers)) {
 	watchers = config.watchers.map(function(watcher) {
+	    if(!watcher.emailTemplate)
+		watcher.emailTemplate = config.defaultEmailTemplate;
 	    return new Watcher(watcher);
 	});
     }

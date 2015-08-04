@@ -35,13 +35,6 @@
 	{
 	    "subreddit": "thankssam",
 	    "interval": 12000,
-	    "emailTemplate": {
-		"from": "watchit.tests@gmail.com",
-		"to": "watchit.tests@gmail.com",
-		"subject": "Watchit: {subreddit} Alert! {count} new posts. {titles}",
-		"body": "{posts}",
-		"post": "<p>{title}<br/>{url}<br/>{permalink}</p><p>{selfText}</p>"
-	    },
 	    "filters": [
 	    ],
 	    "alertOnFailures": 6
