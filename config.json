@@ -29,15 +29,13 @@
 		    "score": 100,
 		    "comments": 16
 		}	
-	    ],
-	    "alertOnFailures": 6
+	    ]
 	},
 	{
 	    "subreddit": "thankssam",
 	    "interval": 12000,
 	    "filters": [
-	    ],
-	    "alertOnFailures": 6
+	    ]
 	}
     ]
 }
