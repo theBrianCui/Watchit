@@ -70,6 +70,16 @@ Watchit supports the [Mandrill](https://mandrill.com/signup/) email service, but
 
 If you own a domain name, it is highly recommend that you [register your domain with Mandrill](https://mandrillapp.com/settings/sending-domains) for sending. This will reduce the likelihood of your emails appearing as spam or phishing attempts.
 
+Configuration Guide
+----------
+
+Watchit is configured by a single configuration file, `config.json`. The usage of the root level key/value pairs are defined as follows:
+
+ - `service` : (String) The email service used to deliver emails. Currently three email services are supported: MailGun, SendGrid, and Mandrill. Valid values are `mailgun`, `sendgrid`, and `mandrill`, respectively.
+ - `apikey` : (String) The API key for the email provider indicated in `service`.
+ - `defaultEmailTemplate` : (Object) The default email template used when composing notification emails. See the **Email Templates** guide below for more information.
+ - `watchers` : (Array of Objects) An array of Watchers, or subreddit filters. See the **Watchers** guide below for more information.
+
 # For Developers
 
 To run Watchit from source, you will need to have [Node.js installed.](https://nodejs.org/download/) Clone the Watchit repository, setup your `config.json` (see above), and run Watchit with the following terminal command:
