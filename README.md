@@ -75,10 +75,19 @@ Configuration Guide
 
 Watchit is configured by a single configuration file, `config.json`. The usage of the root level key/value pairs are defined as follows:
 
- - `service` : (String) The email service used to deliver emails. Currently three email services are supported: MailGun, SendGrid, and Mandrill. Valid values are `mailgun`, `sendgrid`, and `mandrill`, respectively.
- - `apikey` : (String) The API key for the email provider indicated in `service`.
- - `defaultEmailTemplate` : (Object) The default email template used when composing notification emails. See the **Email Templates** guide below for more information.
- - `watchers` : (Array of Objects) An array of Watchers, or subreddit filters. See the **Watchers** guide below for more information.
+ - `service` : The email service used to deliver emails. Three email services are supported: MailGun, SendGrid, and Mandrill. Valid values are `mailgun`, `sendgrid`, and `mandrill`, respectively.
+ - `apikey` : The API key string for the email provider indicated in `service`.
+ - `defaultEmailTemplate` : The default email template used when composing notification emails. See the **Email Templates** guide below for more information.
+ - `watchers` : An array of Watchers. See the **Watchers** guide below for more information.
+
+**Defining Watchers**
+
+Each unique subreddit for Watchit to track must be assigned a *Watcher*. Watchers have their own individual properties, which will affect the formatting of their notification emails, the frequency with which they check Reddit, and more:
+
+ - `subreddit` : The target subreddit for this Watcher.
+ - `emailTemplate` : (Optional) The email template used when composing and sending notification messages. If no value is provided, the `defaultEmailTemplate` is used.
+ - `interval` : (Optional) How frequently the Watcher will check the subreddit, in milliseconds. If no value is provided, the default value is `60000`, or 1 minute. The minimum possible interval is `5000`, or 5 seconds.
+ - `filters` : (Optional) An array of filters for this Watcher.
 
 # For Developers
 
