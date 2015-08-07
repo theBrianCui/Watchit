@@ -161,7 +161,6 @@ function Watcher(configWatcher) {
     this.subreddit = configWatcher.subreddit;
     this.email = configWatcher.emailTemplate;
     this.interval = configWatcher.interval;
-    this.maxFailures = configWatcher.alertOnFailures;
     this.oldPosts = [];
 
     this.filters = [];
