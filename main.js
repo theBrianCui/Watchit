@@ -160,7 +160,7 @@ function replaceAll(str,mapObj){
 function Watcher(configWatcher) {
     this.subreddit = configWatcher.subreddit;
     this.email = configWatcher.emailTemplate;
-    this.interval = configWatcher.interval;
+    this.interval = (parseInt(configWatcher.interval)) >= 5000 ? parseInt(configWatcher.interval) : 60000;
     this.oldPosts = [];
 
     this.filters = [];
