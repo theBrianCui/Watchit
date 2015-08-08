@@ -10,6 +10,7 @@ var argv = require('./lib/arguments.js')({
     key: '',
     debug: 0
 });
+var replaceAll = require('./lib/stringReplaceAll.js');
 
 //Monkey patching console.log isn't ideal, so we'll go with this instead
 //We can call this.toLog anywhere, which will either refer to this prototype or the object's
@@ -126,16 +127,6 @@ function Dispatcher(watchers) {
 	}	
     };
 };
-
-// Multiple string replace in one pass
-// https://stackoverflow.com/questions/15604140/replace-multiple-strings-with-multiple-other-strings
-function replaceAll(str,mapObj){
-    var re = new RegExp(Object.keys(mapObj).join("|"),"gi");
-    
-    return str.replace(re, function(matched){
-	return mapObj[matched.toLowerCase()];
-    });
-}
 
 function Watcher(configWatcher) {
     this.subreddit = configWatcher.subreddit;
