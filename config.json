@@ -1,6 +1,6 @@
 {
     "apikey":"paste-your-api-key-here",
-    "service":"mandrill",
+    "service":"sendgrid",
     "defaultEmailTemplate": {
 	"from": "default.email.address@not.a.real.domain",
 	"to": "you@somewhere.place",
@@ -29,12 +29,6 @@
 		    "score": 100,
 		    "comments": 16
 		}	
-	    ]
-	},
-	{
-	    "subreddit": "thankssam",
-	    "interval": 12000,
-	    "filters": [
 	    ]
 	}
     ]
