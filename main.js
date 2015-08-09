@@ -14,29 +14,29 @@ var replaceAll = require('./lib/stringReplaceAll.js');
 
 //Monkey patching console.log isn't ideal, so we'll go with this instead
 //We can call this.toLog anywhere, which will either refer to this prototype or the object's
-global.toLog = function(message, debug) {
+global.toLog = function (message, debug) {
     //The higher the value of `debug`, the less important it is
     //If no argument is provided (or if 0), always log the message
-    if(!debug || debug <= argv.debug) {
-	message = (new Date).toISOString().replace(/z|t/gi,' ').substring(0, 19) + " : " + message;
-	
-	if(!argv.silent) console.log(message);
-	if(argv.log) {
-	    fs.appendFile('Watchit.log', message + '\n', function(err) {
-		if(err) {
-		    argv.log = false;
-		    global.toLog('Error: could not write to file Watchit.log. ' + err);
-		    global.toLog('Disabling logging mode.');
-		}
-	    });
-	}
+    if (!debug || debug <= argv.debug) {
+        message = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + message;
+
+        if (!argv.silent) console.log(message);
+        if (argv.log) {
+            fs.appendFile('Watchit.log', message + '\n', function (err) {
+                if (err) {
+                    argv.log = false;
+                    global.toLog('Error: could not write to file Watchit.log. ' + err);
+                    global.toLog('Disabling logging mode.');
+                }
+            });
+        }
     }
-}
+};
 
 function promptExit(code) {
     global.toLog('Press any key to exit...');
-    if(!argv.silent)
-	readlineSync.keyIn();
+    if (!argv.silent)
+        readlineSync.keyIn();
     process.exit(code == null ? 0 : code);
 }
 
@@ -49,30 +49,30 @@ var supportedServices = {
 };
 var service = config.service.toLowerCase();
 //API key provided as command line argument:
-if(argv.key)
+if (argv.key)
     config.apikey = argv.key;
 
-if(!supportedServices[service]) {
+if (!supportedServices[service]) {
     global.toLog(service + " is not a supported email service. Please check the README.md file for details.");
     promptExit(1);
 }
 
-if(config.apikey == "paste-your-api-key-here" || !config.apikey) {
+if (config.apikey == "paste-your-api-key-here" || !config.apikey) {
     global.toLog("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
-	+ "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"	
-	+ "Check out the README.md file for more information on how to get one.");
+    + "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"
+    + "Check out the README.md file for more information on how to get one.");
     promptExit(1);
 }
 
 //Setup sendgrid
 var sendgrid = {};
-if(service == "sendgrid")
+if (service == "sendgrid")
     sendgrid = require('sendgrid')(config.apikey);
 
 //Setup mailgun and mailcomposer
-var mailgun = {};
-var MailComposer = {};
-if(service == "mailgun") {
+var mailgun;
+var MailComposer;
+if (service == "mailgun") {
     var Mg = require('mailgun').Mailgun;
     mailgun = new Mg(config.apikey);
     MailComposer = require("mailcomposer").MailComposer;
@@ -85,48 +85,52 @@ function Dispatcher(watchers) {
     var _queue = 0;
 
     var _watcherMap = {};
-    watchers.forEach(function(watcher) {
-	_watcherMap[watcher.subreddit] = watcher;
+    watchers.forEach(function (watcher) {
+        _watcherMap[watcher.subreddit] = watcher;
     });
-    
-    var scheduleDispatch = function(subreddit) {
-	setTimeout(function() { dispatch(subreddit) },
-		   _watcherMap[subreddit].interval);
+
+    var scheduleDispatch = function (subreddit) {
+        setTimeout(function () {
+                dispatch(subreddit)
+            },
+            _watcherMap[subreddit].interval);
     };
 
-    var delayDispatch = function(subreddit) {
-	setTimeout(function() { dispatch(subreddit) },
-		   2000 * _queue);
+    var delayDispatch = function (subreddit) {
+        setTimeout(function () {
+                dispatch(subreddit)
+            },
+            2000 * _queue);
     };
 
-    var dispatch = function(subreddit) {
-	if(!_lock) {
-	    _lock = true;
-	    _watcherMap[subreddit].checkSubreddit(
-		function() {
-		    scheduleDispatch(subreddit);
-		}
-	    );
+    var dispatch = function (subreddit) {
+        if (!_lock) {
+            _lock = true;
+            _watcherMap[subreddit].checkSubreddit(
+                function () {
+                    scheduleDispatch(subreddit);
+                }
+            );
 
-	    if(_queue > 0) _queue--;
-	    setTimeout(function() {
-		_lock = false;
-	    }, 2000);
-	    
-	} else {
-	    _queue++;
-	    delayDispatch(subreddit);
-	}
+            if (_queue > 0) _queue--;
+            setTimeout(function () {
+                _lock = false;
+            }, 2000);
+
+        } else {
+            _queue++;
+            delayDispatch(subreddit);
+        }
     };
 
-    this.start = function() {
-	for(var subreddit in _watcherMap) {
-	    if (_watcherMap.hasOwnProperty(subreddit)) {
-		scheduleDispatch(subreddit);
-	    }
-	}	
+    this.start = function () {
+        for (var subreddit in _watcherMap) {
+            if (_watcherMap.hasOwnProperty(subreddit)) {
+                scheduleDispatch(subreddit);
+            }
+        }
     };
-};
+}
 
 function Watcher(configWatcher) {
     this.subreddit = configWatcher.subreddit;
@@ -135,102 +139,102 @@ function Watcher(configWatcher) {
     this.oldPosts = [];
 
     this.filters = [];
-    if(Array.isArray(configWatcher.filters)) {
-	this.filters = configWatcher.filters.map(function(filter) {
-	    return new Filter(filter);
-	});
+    if (Array.isArray(configWatcher.filters)) {
+        this.filters = configWatcher.filters.map(function (filter) {
+            return new Filter(filter);
+        });
     }
     global.toLog('This subreddit has ' + this.filters.length + ' filters.');
-};
+}
 
 Watcher.prototype.checkSubreddit = function (callback) {
     global.toLog('Checking for new posts...');
-    request({ 'url': 'https://reddit.com/r/' + this.subreddit + '/new.json' },
-	    (function(error, response, body) {
-		if (!error && response.statusCode == 200) {
+    request({'url': 'https://reddit.com/r/' + this.subreddit + '/new.json'},
+        (function (error, response, body) {
+            if (!error && response.statusCode == 200) {
 
-		    //Take all posts and turn them into RedditPost objects
-		    var loadedPosts = JSON.parse(body).data.children.map(function (post) {
-			return new RedditPost(post);
-		    });
-		    global.toLog('' + loadedPosts.length + ' posts loaded.');
-		    
-		    //Filter loadedPosts
-		    loadedPosts = loadedPosts.filter((function (post) {
+                //Take all posts and turn them into RedditPost objects
+                var loadedPosts = JSON.parse(body).data.children.map(function (post) {
+                    return new RedditPost(post);
+                });
+                global.toLog('' + loadedPosts.length + ' posts loaded.');
 
-			var filterCount = this.filters.length;
-			//At least one filter must pass
-			if(filterCount > 0) {
-			    for(var u = 0; u < filterCount; u++) {
-				if(this.filters[u].test(post)) return true;
-			    }
-			    return false;
-			}
+                //Filter loadedPosts
+                loadedPosts = loadedPosts.filter((function (post) {
 
-			//If no filters are defined, let all posts pass
-			return true;
-		    }).bind(this));
-		    global.toLog(loadedPosts.length + ' posts remain after applying '
-			+ this.filters.length + ' filters.');
-		    
-		    //Step through each post from the loadedPosts and compare with oldPosts
-		    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
-		    var newPosts = [];
-		    for(var k = 0; k < loadedPosts.length; k++) {
-			if(!loadedPosts[k].equals(this.oldPosts[0])) {
-			    newPosts.push(loadedPosts[k])
-			} else {
-			    //When we reach a matching post, we know the rest of the posts will match
-			    //This works because posts are sorted by age
-			    break;
-			}
-		    }
+                    var filterCount = this.filters.length;
+                    //At least one filter must pass
+                    if (filterCount > 0) {
+                        for (var u = 0; u < filterCount; u++) {
+                            if (this.filters[u].test(post)) return true;
+                        }
+                        return false;
+                    }
 
-		    global.toLog(newPosts.length + ' filtered posts are new.');
-		    if(newPosts.length > 0) {
-			global.toLog(newPosts[0].ageString + ' is the age of the newest filtered post.');
-			var replacements = {};
-			replacements['{subreddit}'] = this.subreddit;
-			replacements['{count}'] = newPosts.length;
-			replacements['{titles}'] = (newPosts.map(function (post) {
-			    return post.title;
-			})).join(', ');
-			
-			var message = replaceAll(this.composeEmail(newPosts), replacements);
-			var subject = replaceAll(this.email.subject, replacements);
-			this.sendEmail(subject, message);
-		    }
+                    //If no filters are defined, let all posts pass
+                    return true;
+                }).bind(this));
+                global.toLog(loadedPosts.length + ' posts remain after applying '
+                + this.filters.length + ' filters.');
 
-		    this.oldPosts = loadedPosts;
-		    
-		} else {
-		    global.toLog('Reddit read failure!');
-		    global.toLog('Error: ' + JSON.stringify(error));
-		    global.toLog('Response: ' + JSON.stringify(response), 1);
-		    global.toLog('Body: ' + JSON.stringify(body));
-		}
+                //Step through each post from the loadedPosts and compare with oldPosts
+                //Since listings are sorted by submission date, we can stop as soon as an old post is seen
+                var newPosts = [];
+                for (var k = 0; k < loadedPosts.length; k++) {
+                    if (!loadedPosts[k].equals(this.oldPosts[0])) {
+                        newPosts.push(loadedPosts[k])
+                    } else {
+                        //When we reach a matching post, we know the rest of the posts will match
+                        //This works because posts are sorted by age
+                        break;
+                    }
+                }
 
-		callback();
-	    }).bind(this));
+                global.toLog(newPosts.length + ' filtered posts are new.');
+                if (newPosts.length > 0) {
+                    global.toLog(newPosts[0].ageString + ' is the age of the newest filtered post.');
+                    var replacements = {};
+                    replacements['{subreddit}'] = this.subreddit;
+                    replacements['{count}'] = newPosts.length;
+                    replacements['{titles}'] = (newPosts.map(function (post) {
+                        return post.title;
+                    })).join(', ');
+
+                    var message = replaceAll(this.composeEmail(newPosts), replacements);
+                    var subject = replaceAll(this.email.subject, replacements);
+                    this.sendEmail(subject, message);
+                }
+
+                this.oldPosts = loadedPosts;
+
+            } else {
+                global.toLog('Reddit read failure!');
+                global.toLog('Error: ' + JSON.stringify(error));
+                global.toLog('Response: ' + JSON.stringify(response), 1);
+                global.toLog('Body: ' + JSON.stringify(body));
+            }
+
+            callback();
+        }).bind(this));
 };
 
-Watcher.prototype.composeEmail = function(posts) {
+Watcher.prototype.composeEmail = function (posts) {
     var body = this.email.body;
     var bodyPosts = '';
 
-    for(var i = 0; i < posts.length; i++){
-	var post = posts[i];
+    for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
 
-	//Any post property saved should be substituted in the template
-	var postReplacements = {};
-	for(var prop in post) {
-	    var value = post[prop];
-	    //Skip functions
-	    if(Object.prototype.toString.call(value) != '[object Function]')
-		postReplacements['{' + prop.toLowerCase() + '}'] = post[prop];
-	}
+        //Any post property saved should be substituted in the template
+        var postReplacements = {};
+        for (var prop in post) {
+            var value = post[prop];
+            //Skip functions
+            if (Object.prototype.toString.call(value) != '[object Function]')
+                postReplacements['{' + prop.toLowerCase() + '}'] = post[prop];
+        }
 
-	bodyPosts += replaceAll(this.email.post, postReplacements);
+        bodyPosts += replaceAll(this.email.post, postReplacements);
     }
 
     var replacements = {};
@@ -240,87 +244,89 @@ Watcher.prototype.composeEmail = function(posts) {
 
 Watcher.prototype.sendEmail = function (subject, body) {
     //Cut off a subject that ends up being too long
-    if(subject !== subject.substring(0, 77))
-	subject = subject.substring(0, 74) + '...';
-    
-    if(service == "sendgrid") {
+    if (subject !== subject.substring(0, 77))
+        subject = subject.substring(0, 74) + '...';
 
-	sendgrid.send(new sendgrid.Email({
-	    to: this.email.to,
-	    from: this.email.from,
-	    subject: subject,
-	    html: body
-	}), (function(error, response, body) {
-	    if (response && response.message == "success") {
-		this.logEmailSuccess();
-	    } else {
-		this.toLogEmailError(error, response, body);
-	    }
-	}).bind(this));
-	
-    } else if(service == "mandrill") {
-	request({ 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
-		  'method': 'POST',
-		  'json': { 'key': config.apikey,
-			    'message': {
-				'from_email': this.email.from,
-				'to': [
-				    {
-					'email': this.email.to,
-					'type': 'to'
-				    }],
-				'autotext': 'true',
-				'subject': subject,
-				'html': body,
-			    }
-			  }
-		}, (function(error, response, body) {
-		    if (!error && response.statusCode == 200) {
-			this.logEmailSuccess();
-		    } else {
-			this.logEmailError(error, response, body);
-		    }
-		}).bind(this));
-	
-    } else if(service == "mailgun") {
-	var mc = new MailComposer();
-	mc.setMessageOption({
-	    from: this.email.from,
-	    to: this.email.to,
-	    subject: subject,
-	    html: body,
-	});
+    if (service == "sendgrid") {
 
-	mc.buildMessage((function(error, messageSource) {
-	    if(!error && messageSource) {
-		mailgun.sendRaw(this.email.from, this.email.to,
-				messageSource,
-				(function(error) {
-				    if(error) this.logEmailError(this);
-				    else this.logEmailSuccess();
-				}).bind(this));
-	    } else {
-		this.logEmailError(error);
-	    }
-	}).bind(this));
+        sendgrid.send(new sendgrid.Email({
+            to: this.email.to,
+            from: this.email.from,
+            subject: subject,
+            html: body
+        }), (function (error, response) {
+            if (response && response.message == "success") {
+                this.logEmailSuccess();
+            } else {
+                this.logEmailError(error, response);
+            }
+        }).bind(this));
+
+    } else if (service == "mandrill") {
+        request({
+            'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
+            'method': 'POST',
+            'json': {
+                'key': config.apikey,
+                'message': {
+                    'from_email': this.email.from,
+                    'to': [
+                        {
+                            'email': this.email.to,
+                            'type': 'to'
+                        }],
+                    'autotext': 'true',
+                    'subject': subject,
+                    'html': body
+                }
+            }
+        }, (function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                this.logEmailSuccess();
+            } else {
+                this.logEmailError(error, response, body);
+            }
+        }).bind(this));
+
+    } else if (service == "mailgun") {
+        var mc = new MailComposer();
+        mc.setMessageOption({
+            from: this.email.from,
+            to: this.email.to,
+            subject: subject,
+            html: body
+        });
+
+        mc.buildMessage((function (error, messageSource) {
+            if (!error && messageSource) {
+                mailgun.sendRaw(this.email.from, this.email.to,
+                    messageSource,
+                    (function (error) {
+                        if (error) this.logEmailError(this);
+                        else this.logEmailSuccess();
+                    }).bind(this));
+            } else {
+                this.logEmailError(error);
+            }
+        }).bind(this));
     }
 };
 
-Watcher.prototype.logEmailSuccess = function() {
+Watcher.prototype.logEmailSuccess = function () {
     global.toLog('Successfully sent alert email to '
-	+ this.email.to + ' via ' + supportedServices[service] + '.');
+    + this.email.to + ' via ' + supportedServices[service] + '.');
 };
 
-Watcher.prototype.logEmailError = function(error, response, body) {
+Watcher.prototype.logEmailError = function (error, response, body) {
     global.toLog('Failed to deliver alert email to '
-	+ this.email.to + ' via ' + supportedServices[service] + '.');
+    + this.email.to + ' via ' + supportedServices[service] + '.');
     global.toLog('Check that the provided API key is valid, the chosen service is up, ' +
-	'and the from/to email addresses are valid.');
-    
-    if(error) global.toLog('Error: ' + JSON.stringify(error));
+    'and the from/to email addresses are valid.');
+
+    if (error) global.toLog('Error: ' + JSON.stringify(error));
     //The response tends to be long and confusing, so log it on debug level 1
-    if(response) global.toLog('Response: ' + JSON.stringify(response), 1);
-    if(body) global.toLog('Body: ' + JSON.stringify(body));
+    if (response) global.toLog('Response: ' + JSON.stringify(response), 1);
+    if (body) global.toLog('Body: ' + JSON.stringify(body));
 };
 
 function RedditPost(rawPost) {
@@ -337,27 +343,27 @@ function RedditPost(rawPost) {
     this.comments = rawPost.num_comments;
     this.over18 = rawPost.over_18;
     this.createdAt = rawPost.created_utc;
-    
-    this.age = (function() {
-	return Math.floor((new Date).getTime()/1000) - this.createdAt;
+
+    this.age = (function () {
+        return Math.floor((new Date).getTime() / 1000) - this.createdAt;
     }).call(this);
 
-    this.ageString = (function() {
-	var age = this.age;
-	
-	var hours = Math.floor(age/3600);
-	var minutes = Math.floor((age - (hours * 3600))/60);
+    this.ageString = (function () {
+        var age = this.age;
 
-	if(hours == 0 && minutes == 0)
-	    return '<1 minute';
-	else
-	    return hours + ' hour(s) ' + minutes + ' minute(s)';
+        var hours = Math.floor(age / 3600);
+        var minutes = Math.floor((age - (hours * 3600)) / 60);
+
+        if (hours == 0 && minutes == 0)
+            return '<1 minute';
+        else
+            return hours + ' hour(s) ' + minutes + ' minute(s)';
     }).call(this);
-};
+}
 
-RedditPost.prototype.equals = function(post) {
-    if(!post)
-	return false;
+RedditPost.prototype.equals = function (post) {
+    if (!post)
+        return false;
     return (this.permalink == post.permalink);
 };
 
@@ -381,59 +387,59 @@ function Filter(rawFilter) {
     this.over18 = (typeof rawFilter.over18 === 'boolean') ? rawFilter.over18 : null;
 
     //If string contains content, return true
-    var stringFilter = function(str, content) {
-	str = str.toLowerCase();
-	if(!content) return true;
-	
-	if(Array.isArray(content)) {
-	    //'anyString'.indexOf('') returns true
-	    for(var i = 0; i < content.length; i++) {
-		if(str.indexOf(content[i].toLowerCase()) != -1) return true;
-	    }
-	    return false;
-	}
-	return str.indexOf(content.toLowerCase()) != -1;
-    };
-    
-    this.test = function(post) {
-	//Compare booleans
-	//If the filter value is unset, don't check
-	if((this.selfPost != null) && this.selfPost !== post.selfPost) return false;
-	if((this.over18 != null) && this.over18 !== post.over18) return false;
+    var stringFilter = function (str, content) {
+        str = str.toLowerCase();
+        if (!content) return true;
 
-	//Compare values
-	if(this.score > post.score) return false;
-	if(this.comments > post.comments) return false;
-	if(this.age > post.age) return false;
-	
-	//All string filters are the same
-	for (var prop in this) {
-	    var value = post[prop];
-	    if(typeof value === 'string' || value instanceof String) {
-		if(!stringFilter(value, this[prop])) {
-		    return false;
-		}
-	    }
-	}
-
-	//All filters passed
-	return true;
+        if (Array.isArray(content)) {
+            //'anyString'.indexOf('') returns true
+            for (var i = 0; i < content.length; i++) {
+                if (str.indexOf(content[i].toLowerCase()) != -1) return true;
+            }
+            return false;
+        }
+        return str.indexOf(content.toLowerCase()) != -1;
     };
-};
+
+    this.test = function (post) {
+        //Compare booleans
+        //If the filter value is unset, don't check
+        if ((this.selfPost != null) && this.selfPost !== post.selfPost) return false;
+        if ((this.over18 != null) && this.over18 !== post.over18) return false;
+
+        //Compare values
+        if (this.score > post.score) return false;
+        if (this.comments > post.comments) return false;
+        if (this.age > post.age) return false;
+
+        //All string filters are the same
+        for (var prop in this) {
+            var value = post[prop];
+            if (typeof value === 'string' || value instanceof String) {
+                if (!stringFilter(value, this[prop])) {
+                    return false;
+                }
+            }
+        }
+
+        //All filters passed
+        return true;
+    };
+}
 
 function main() {
     var watchers = [];
-    if(Array.isArray(config.watchers)) {
-	watchers = config.watchers.map(function(watcher) {
-	    if(!watcher.emailTemplate)
-		watcher.emailTemplate = config.defaultEmailTemplate;
-	    return new Watcher(watcher);
-	});
+    if (Array.isArray(config.watchers)) {
+        watchers = config.watchers.map(function (watcher) {
+            if (!watcher.emailTemplate)
+                watcher.emailTemplate = config.defaultEmailTemplate;
+            return new Watcher(watcher);
+        });
     }
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
     global.toLog('Watchit is now running.');
-};
+}
 
 main();
