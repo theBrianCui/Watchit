@@ -2,7 +2,8 @@ var fs = require('fs');
 var request = require('request');
 var readlineSync = require('readline-sync');
 
-//Custom modules
+//Custom modules: Stored in ./lib/
+//Objects and static functions
 var config = require('./config.json');
 var argv = require('./lib/arguments.js')({
     log: false,
@@ -11,6 +12,10 @@ var argv = require('./lib/arguments.js')({
     debug: 0
 });
 var replaceAll = require('./lib/stringReplaceAll.js');
+
+//Classes
+var RedditPost = require('./lib/RedditPost.js');
+var Filter = require('./lib/Filter.js');
 
 //Monkey patching console.log isn't ideal, so we'll go with this instead
 //We can call this.toLog anywhere, which will either refer to this prototype or the object's
@@ -325,102 +330,6 @@ Watcher.prototype.logEmailError = function (error, response, body) {
     if (response) global.toLog('Response: ' + JSON.stringify(response), 1);
     if (body) global.toLog('Body: ' + JSON.stringify(body));
 };
-
-function RedditPost(rawPost) {
-    rawPost = rawPost.data;
-    this.domain = rawPost.domain;
-    this.subreddit = rawPost.subreddit;
-    this.url = (rawPost.is_self ? '(text only/self post)' : rawPost.url);
-    this.permalink = 'http://reddit.com' + rawPost.permalink;
-    this.title = rawPost.title;
-    this.author = rawPost.author;
-    this.score = rawPost.score;
-    this.selfPost = rawPost.is_self;
-    this.selfText = rawPost.selftext;
-    this.comments = rawPost.num_comments;
-    this.over18 = rawPost.over_18;
-    this.createdAt = rawPost.created_utc;
-
-    this.age = (function (createdAt) {
-        return Math.floor((new Date).getTime() / 1000) - createdAt;
-    })(this.createdAt);
-
-    this.ageString = (function (age) {
-        var hours = Math.floor(age / 3600);
-        var minutes = Math.floor((age - (hours * 3600)) / 60);
-
-        if (hours == 0 && minutes == 0)
-            return '<1 minute';
-        else
-            return hours + ' hour(s) ' + minutes + ' minute(s)';
-    })(this.age);
-}
-
-RedditPost.prototype.equals = function (post) {
-    if (!post)
-        return false;
-    return (this.permalink == post.permalink);
-};
-
-function Filter(rawFilter) {
-    //String filters. Can also be arrays.
-    this.domain = rawFilter.domain || '';
-    this.title = rawFilter.title || '';
-    this.url = rawFilter.url || '';
-    this.permalink = rawFilter.permalink || '';
-    this.title = rawFilter.title || '';
-    this.author = rawFilter.author || '';
-    this.selfText = rawFilter.selfText || '';
-
-    //Value filters
-    this.score = rawFilter.score || -1;
-    this.comments = rawFilter.comments || -1;
-    this.age = rawFilter.age || -1;
-
-    //Boolean filters
-    this.selfPost = (typeof rawFilter.selfPost === 'boolean') ? rawFilter.selfPost : null;
-    this.over18 = (typeof rawFilter.over18 === 'boolean') ? rawFilter.over18 : null;
-
-    //If string contains content, return true
-    var stringFilter = function (str, content) {
-        str = str.toLowerCase();
-        if (!content) return true;
-
-        if (Array.isArray(content)) {
-            //'anyString'.indexOf('') returns true
-            for (var i = 0; i < content.length; i++) {
-                if (str.indexOf(content[i].toLowerCase()) != -1) return true;
-            }
-            return false;
-        }
-        return str.indexOf(content.toLowerCase()) != -1;
-    };
-
-    this.test = function (post) {
-        //Compare booleans
-        //If the filter value is unset, don't check
-        if ((this.selfPost != null) && this.selfPost !== post.selfPost) return false;
-        if ((this.over18 != null) && this.over18 !== post.over18) return false;
-
-        //Compare values
-        if (this.score > post.score) return false;
-        if (this.comments > post.comments) return false;
-        if (this.age > post.age) return false;
-
-        //All string filters are the same
-        for (var prop in this) {
-            var value = post[prop];
-            if (typeof value === 'string' || value instanceof String) {
-                if (!stringFilter(value, this[prop])) {
-                    return false;
-                }
-            }
-        }
-
-        //All filters passed
-        return true;
-    };
-}
 
 function main() {
     var watchers = [];

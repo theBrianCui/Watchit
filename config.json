@@ -1,5 +1,5 @@
 {
-    "apikey":"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",
+    "apikey":"",
     "service":"sendgrid",
     "defaultEmailTemplate": {
 	"from": "default.email.address@not.a.real.domain",
