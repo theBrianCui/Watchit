@@ -341,13 +341,11 @@ function RedditPost(rawPost) {
     this.over18 = rawPost.over_18;
     this.createdAt = rawPost.created_utc;
 
-    this.age = (function () {
-        return Math.floor((new Date).getTime() / 1000) - this.createdAt;
-    }).call(this);
+    this.age = (function (createdAt) {
+        return Math.floor((new Date).getTime() / 1000) - createdAt;
+    })(this.createdAt);
 
-    this.ageString = (function () {
-        var age = this.age;
-
+    this.ageString = (function (age) {
         var hours = Math.floor(age / 3600);
         var minutes = Math.floor((age - (hours * 3600)) / 60);
 
@@ -355,7 +353,7 @@ function RedditPost(rawPost) {
             return '<1 minute';
         else
             return hours + ' hour(s) ' + minutes + ' minute(s)';
-    }).call(this);
+    })(this.age);
 }
 
 RedditPost.prototype.equals = function (post) {
