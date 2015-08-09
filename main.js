@@ -233,10 +233,12 @@ Watcher.prototype.composeEmail = function (posts) {
         //Any post property saved should be substituted in the template
         var postReplacements = {};
         for (var prop in post) {
-            var value = post[prop];
-            //Skip functions
-            if (Object.prototype.toString.call(value) != '[object Function]')
-                postReplacements['{' + prop.toLowerCase() + '}'] = post[prop];
+            if(post.hasOwnProperty(prop)) {
+                var value = post[prop];
+                //Skip functions
+                if (Object.prototype.toString.call(value) != '[object Function]')
+                    postReplacements['{' + prop.toLowerCase() + '}'] = post[prop];
+            }
         }
 
         bodyPosts += replaceAll(this.email.post, postReplacements);
