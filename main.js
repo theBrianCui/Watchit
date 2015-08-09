@@ -49,15 +49,12 @@ var supportedServices = {
 };
 var service = config.service.toLowerCase();
 //API key provided as command line argument:
-if (argv.key)
-    config.apikey = argv.key;
+if (argv.key) config.apikey = argv.key;
 
 if (!supportedServices[service]) {
     global.toLog(service + " is not a supported email service. Please check the README.md file for details.");
     promptExit(1);
-}
-
-if (config.apikey == "paste-your-api-key-here" || !config.apikey) {
+} else if (!config.apikey || config.apikey == "paste-your-api-key-here") {
     global.toLog("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
     + "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"
     + "Check out the README.md file for more information on how to get one.");
@@ -65,13 +62,13 @@ if (config.apikey == "paste-your-api-key-here" || !config.apikey) {
 }
 
 //Setup sendgrid
-var sendgrid = {};
+var sendgrid;
+var mailgun;
+var MailComposer;
 if (service == "sendgrid")
     sendgrid = require('sendgrid')(config.apikey);
 
 //Setup mailgun and mailcomposer
-var mailgun;
-var MailComposer;
 if (service == "mailgun") {
     var Mg = require('mailgun').Mailgun;
     mailgun = new Mg(config.apikey);
