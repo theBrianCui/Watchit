@@ -23,18 +23,21 @@ global.toLog = function (message, debug) {
     //The higher the value of `debug`, the less important it is
     //If no argument is provided (or if 0), always log the message
     if (!debug || debug <= argv.debug) {
-        message = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + message;
+        var messages = message.split('\n');
+        messages.forEach(function(message) {
+            message = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + message;
 
-        if (!argv.silent) console.log(message);
-        if (argv.log) {
-            fs.appendFile('Watchit.log', message + '\n', function (err) {
-                if (err) {
-                    argv.log = false;
-                    global.toLog('Error: could not write to file Watchit.log. ' + err);
-                    global.toLog('Disabling logging mode.');
-                }
-            });
-        }
+            if (!argv.silent) console.log(message);
+            if (argv.log) {
+                fs.appendFile('Watchit.log', message + '\n', function (err) {
+                    if (err) {
+                        argv.log = false;
+                        global.toLog('Error: could not write to file Watchit.log. ' + err + '\n'
+                        + 'Disabling logging mode.');
+                    }
+                });
+            }
+        })
     }
 };
 
@@ -61,8 +64,8 @@ if (!supportedServices[service]) {
     promptExit(1);
 } else if (!config.apikey || config.apikey == "paste-your-api-key-here") {
     global.toLog("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
-    + "Please either supply a " + supportedServices[service] + " API key in the config.json file.\n"
-    + "Check out the README.md file for more information on how to get one.");
+    + "Please supply a " + supportedServices[service] + " API key in the config.json file.\n"
+    + "Check out the README.md file for more information on how to obtain an API key.");
     promptExit(1);
 }
 
