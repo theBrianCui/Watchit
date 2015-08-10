@@ -2,88 +2,93 @@ var fs = require('fs');
 var request = require('request');
 var readlineSync = require('readline-sync');
 
-//Custom modules: Stored in ./lib/
-//Objects and static functions
-var config = require('./config.json');
-var argv = require('./lib/arguments.js')({
-    log: false,
-    silent: false,
-    key: '',
-    debug: 0
-});
-var replaceAll = require('./lib/stringReplaceAll.js');
-
 //Classes
 var RedditPost = require('./lib/RedditPost.js');
 var Filter = require('./lib/Filter.js');
 
-//Monkey patching console.log isn't ideal, so we'll go with this instead
-//We can call this.toLog anywhere, which will either refer to this prototype or the object's
-global.toLog = function (message, debug) {
-    //The higher the value of `debug`, the less important it is
-    //If no argument is provided (or if 0), always log the message
-    if (!debug || debug <= argv.debug) {
-        var messages = message.split('\n');
-        messages.forEach(function(message) {
-            message = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + message;
+//The global watchit object, used for namespacing
+var watchit = new (function(){
+    this.args = require('./lib/arguments.js')({
+        log: false,
+        silent: false,
+        key: '',
+        debug: 0
+    });
 
-            if (!argv.silent) console.log(message);
-            if (argv.log) {
-                fs.appendFile('Watchit.log', message + '\n', function (err) {
-                    if (err) {
-                        argv.log = false;
-                        global.toLog('Error: could not write to file Watchit.log. ' + err + '\n'
-                        + 'Disabling logging mode.');
+    this.config = (function(args) {
+        var cfg = require('./config.json');
+        if(args.key) cfg.apikey = args.key;
+        return cfg;
+    })(this.args);
+
+    this.supportedServices = {
+        sendgrid: "SendGrid",
+        mandrill: "Mandrill",
+        mailgun: "Mailgun"
+    };
+    
+    this.service = this.config.service.toLowerCase();
+
+    this.utils =  {
+        log: function (message, debug) {
+            //The higher the value of `debug`, the less important it is
+            //If no argument is provided (or if 0), always log the message
+            if (!debug || debug <= this.args.debug) {
+                var messages = message.split('\n');
+                for(var i = 0; i < messages.length; i++){
+                    var output = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + messages[i];
+
+                    if (!this.args.silent) console.log(output);
+                    if (this.args.log) {
+                        fs.appendFile('Watchit.log', output + '\n', function (err) {
+                            if (err) {
+                                this.args.log = false;
+                                this.utils.log('Error: could not write to file Watchit.log. ' + err + '\n'
+                                + 'Disabling logging mode.');
+                            }
+                        }.bind(this));
                     }
-                });
+                }
             }
-        })
-    }
-};
+        }.bind(this),
+        replaceAll: require('./lib/stringReplaceAll.js'),
+        promptExit: function(code) {
+            this.utils.log("Press any key to exit...");
+            if (!this.args.silent)
+                readlineSync.keyIn();
+            process.exit(code == null ? 0 : code);
+        }.bind(this)
+    };
+})();
 
-function promptExit(code) {
-    global.toLog('Press any key to exit...');
-    if (!argv.silent)
-        readlineSync.keyIn();
-    process.exit(code == null ? 0 : code);
-}
+watchit.utils.log("Launching Watchit!");
 
-global.toLog("Launching Watchit!");
-
-var supportedServices = {
-    sendgrid: "SendGrid",
-    mandrill: "Mandrill",
-    mailgun: "Mailgun"
-};
-var service = config.service.toLowerCase();
-//API key provided as command line argument:
-if (argv.key) config.apikey = argv.key;
-
-if (!supportedServices[service]) {
-    global.toLog(service + " is not a supported email service. Please check the README.md file for details.");
-    promptExit(1);
-} else if (!config.apikey || config.apikey == "paste-your-api-key-here") {
-    global.toLog("You have not provided a " + supportedServices[service] + " API key for email notifications.\n"
-    + "Please supply a " + supportedServices[service] + " API key in the config.json file.\n"
+if (!watchit.supportedServices[watchit.service]) {
+    watchit.utils.log(watchit.service + " is not a supported email service. Please check the README.md file for details.");
+    watchit.utils.promptExit(1);
+} else if (!watchit.config.apikey || watchit.config.apikey == "paste-your-api-key-here") {
+    watchit.utils.log("You have not provided a " + watchit.supportedServices[watchit.service]
+    + " API key for email notifications.\n"
+    + "Please supply a " + watchit.supportedServices[watchit.service] + " API key in the config.json file.\n"
     + "Check out the README.md file for more information on how to obtain an API key.");
-    promptExit(1);
+    watchit.utils.promptExit(1);
 }
 
 //Setup sendgrid
 var sendgrid;
 var mailgun;
 var MailComposer;
-if (service == "sendgrid")
-    sendgrid = require('sendgrid')(config.apikey);
+if (watchit.service == "sendgrid")
+    sendgrid = require('sendgrid')(watchit.config.apikey);
 
 //Setup mailgun and mailcomposer
-if (service == "mailgun") {
+if (watchit.service == "mailgun") {
     var Mg = require('mailgun').Mailgun;
-    mailgun = new Mg(config.apikey);
+    mailgun = new Mg(watchit.config.apikey);
     MailComposer = require("mailcomposer").MailComposer;
 }
 
-global.toLog(supportedServices[service] + " API Key: " + config.apikey);
+watchit.utils.log(watchit.supportedServices[watchit.service] + " API Key: " + watchit.config.apikey);
 
 function Dispatcher(watchers) {
     var _lock = false;
@@ -149,11 +154,11 @@ function Watcher(configWatcher) {
             return new Filter(filter);
         });
     }
-    global.toLog('This subreddit has ' + this.filters.length + ' filters.');
+    watchit.utils.log('This subreddit has ' + this.filters.length + ' filters.');
 }
 
 Watcher.prototype.checkSubreddit = function (callback) {
-    global.toLog('Checking for new posts...');
+    watchit.utils.log('Checking for new posts...');
     request({'url': 'https://reddit.com/r/' + this.subreddit + '/new.json'},
         (function (error, response, body) {
             if (!error && response.statusCode == 200) {
@@ -162,7 +167,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
                 var loadedPosts = JSON.parse(body).data.children.map(function (post) {
                     return new RedditPost(post);
                 });
-                global.toLog('' + loadedPosts.length + ' posts loaded.');
+                watchit.utils.log('' + loadedPosts.length + ' posts loaded.');
 
                 //Filter loadedPosts
                 loadedPosts = loadedPosts.filter((function (post) {
@@ -179,7 +184,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
                     //If no filters are defined, let all posts pass
                     return true;
                 }).bind(this));
-                global.toLog(loadedPosts.length + ' posts remain after applying '
+                watchit.utils.log(loadedPosts.length + ' posts remain after applying '
                 + this.filters.length + ' filters.');
 
                 //Step through each post from the loadedPosts and compare with oldPosts
@@ -195,9 +200,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
                     }
                 }
 
-                global.toLog(newPosts.length + ' filtered posts are new.');
+                watchit.utils.log(newPosts.length + ' filtered posts are new.');
                 if (newPosts.length > 0) {
-                    global.toLog(newPosts[0].ageString + ' is the age of the newest filtered post.');
+                    watchit.utils.log(newPosts[0].ageString + ' is the age of the newest filtered post.');
                     var replacements = {};
                     replacements['{subreddit}'] = this.subreddit;
                     replacements['{count}'] = newPosts.length;
@@ -205,18 +210,18 @@ Watcher.prototype.checkSubreddit = function (callback) {
                         return post.title;
                     })).join(', ');
 
-                    var message = replaceAll(this.composeEmail(newPosts), replacements);
-                    var subject = replaceAll(this.email.subject, replacements);
+                    var message = watchit.utils.replaceAll(this.composeEmail(newPosts), replacements);
+                    var subject = watchit.utils.replaceAll(this.email.subject, replacements);
                     this.sendEmail(subject, message);
                 }
 
                 this.oldPosts = loadedPosts;
 
             } else {
-                global.toLog('Reddit read failure!');
-                global.toLog('Error: ' + JSON.stringify(error));
-                global.toLog('Response: ' + JSON.stringify(response), 1);
-                global.toLog('Body: ' + JSON.stringify(body));
+                watchit.utils.log('Reddit read failure!');
+                watchit.utils.log('Error: ' + JSON.stringify(error));
+                watchit.utils.log('Response: ' + JSON.stringify(response), 1);
+                watchit.utils.log('Body: ' + JSON.stringify(body));
             }
 
             callback();
@@ -241,12 +246,12 @@ Watcher.prototype.composeEmail = function (posts) {
             }
         }
 
-        bodyPosts += replaceAll(this.email.post, postReplacements);
+        bodyPosts += watchit.utils.replaceAll(this.email.post, postReplacements);
     }
 
     var replacements = {};
     replacements['{posts}'] = bodyPosts;
-    return replaceAll(body, replacements);
+    return watchit.utils.replaceAll(body, replacements);
 };
 
 Watcher.prototype.sendEmail = function (subject, body) {
@@ -254,7 +259,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
     if (subject !== subject.substring(0, 77))
         subject = subject.substring(0, 74) + '...';
 
-    if (service == "sendgrid") {
+    if (watchit.service == "sendgrid") {
 
         sendgrid.send(new sendgrid.Email({
             to: this.email.to,
@@ -269,12 +274,12 @@ Watcher.prototype.sendEmail = function (subject, body) {
             }
         }).bind(this));
 
-    } else if (service == "mandrill") {
+    } else if (watchit.service == "mandrill") {
         request({
             'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
             'method': 'POST',
             'json': {
-                'key': config.apikey,
+                'key': watchit.config.apikey,
                 'message': {
                     'from_email': this.email.from,
                     'to': [
@@ -295,7 +300,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
             }
         }).bind(this));
 
-    } else if (service == "mailgun") {
+    } else if (watchit.service == "mailgun") {
         var mc = new MailComposer();
         mc.setMessageOption({
             from: this.email.from,
@@ -320,35 +325,35 @@ Watcher.prototype.sendEmail = function (subject, body) {
 };
 
 Watcher.prototype.logEmailSuccess = function () {
-    global.toLog('Successfully sent alert email to '
-    + this.email.to + ' via ' + supportedServices[service] + '.');
+    watchit.utils.log('Successfully sent alert email to '
+    + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
 };
 
 Watcher.prototype.logEmailError = function (error, response, body) {
-    global.toLog('Failed to deliver alert email to '
-    + this.email.to + ' via ' + supportedServices[service] + '.');
-    global.toLog('Check that the provided API key is valid, the chosen service is up, ' +
+    watchit.utils.log('Failed to deliver alert email to '
+    + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
+    watchit.utils.log('Check that the provided API key is valid, the chosen service is up, ' +
     'and the from/to email addresses are valid.');
 
-    if (error) global.toLog('Error: ' + JSON.stringify(error));
+    if (error) watchit.utils.log('Error: ' + JSON.stringify(error));
     //The response tends to be long and confusing, so log it on debug level 1
-    if (response) global.toLog('Response: ' + JSON.stringify(response), 1);
-    if (body) global.toLog('Body: ' + JSON.stringify(body));
+    if (response) watchit.utils.log('Response: ' + JSON.stringify(response), 1);
+    if (body) watchit.utils.log('Body: ' + JSON.stringify(body));
 };
 
 function main() {
     var watchers = [];
-    if (Array.isArray(config.watchers)) {
-        watchers = config.watchers.map(function (watcher) {
+    if (Array.isArray(watchit.config.watchers)) {
+        watchers = watchit.config.watchers.map(function (watcher) {
             if (!watcher.emailTemplate)
-                watcher.emailTemplate = config.defaultEmailTemplate;
+                watcher.emailTemplate = watchit.config.defaultEmailTemplate;
             return new Watcher(watcher);
         });
     }
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
-    global.toLog('Watchit is now running.');
+    watchit.utils.log('Watchit is now running.');
 }
 
 main();
