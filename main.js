@@ -7,7 +7,7 @@ var RedditPost = require('./lib/RedditPost.js');
 var Filter = require('./lib/Filter.js');
 
 //The global watchit object, used for namespacing
-var watchit = new (function(){
+var watchit = new (function(userConfig){
     this.args = require('./lib/arguments.js')({
         log: false,
         silent: false,
@@ -15,19 +15,11 @@ var watchit = new (function(){
         debug: 0
     });
 
-    this.config = (function(args) {
-        var cfg = require('./config.json');
+    this.config = (function(userConfig, args) {
+        var cfg = userConfig;
         if(args.key) cfg.apikey = args.key;
         return cfg;
-    })(this.args);
-
-    this.supportedServices = {
-        sendgrid: "SendGrid",
-        mandrill: "Mandrill",
-        mailgun: "Mailgun"
-    };
-    
-    this.service = this.config.service.toLowerCase();
+    })(userConfig, this.args);
 
     this.utils =  {
         log: function (message, debug) {
@@ -39,16 +31,19 @@ var watchit = new (function(){
                     var output = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + messages[i];
 
                     if (!this.args.silent) console.log(output);
-                    if (this.args.log) {
-                        fs.appendFile('Watchit.log', output + '\n', function (err) {
-                            if (err) {
-                                this.args.log = false;
-                                this.utils.log('Error: could not write to file Watchit.log. ' + err + '\n'
-                                + 'Disabling logging mode.');
-                            }
-                        }.bind(this));
-                    }
+                    this.utils.writeToLogFile(output);
                 }
+            }
+        }.bind(this),
+        writeToLogFile: function(message) {
+            if (this.args.log) {
+                fs.appendFile('Watchit.log', message + '\n', function (err) {
+                    if (err) {
+                        this.args.log = false;
+                        this.utils.log('Error: could not write to file Watchit.log. ' + err + '\n'
+                        + 'Disabling logging mode.');
+                    }
+                }.bind(this));
             }
         }.bind(this),
         replaceAll: require('./lib/stringReplaceAll.js'),
@@ -59,20 +54,27 @@ var watchit = new (function(){
             process.exit(code == null ? 0 : code);
         }.bind(this)
     };
-})();
 
-watchit.utils.log("Launching Watchit!");
+    this.utils.log("Launching Watchit!");
 
-if (!watchit.supportedServices[watchit.service]) {
-    watchit.utils.log(watchit.service + " is not a supported email service. Please check the README.md file for details.");
-    watchit.utils.promptExit(1);
-} else if (!watchit.config.apikey || watchit.config.apikey == "paste-your-api-key-here") {
-    watchit.utils.log("You have not provided a " + watchit.supportedServices[watchit.service]
-    + " API key for email notifications.\n"
-    + "Please supply a " + watchit.supportedServices[watchit.service] + " API key in the config.json file.\n"
-    + "Check out the README.md file for more information on how to obtain an API key.");
-    watchit.utils.promptExit(1);
-}
+    this.supportedServices = {
+        sendgrid: "SendGrid",
+        mandrill: "Mandrill",
+        mailgun: "Mailgun"
+    };
+
+    this.service = this.config.service && this.config.service.toLowerCase();
+    if(!this.supportedServices[this.service]) {
+        this.utils.log(this.service + " is not a supported email service. Please check the README.md file for details.");
+        this.utils.promptExit(1);
+    } else if (this.config.apikey === '' || this.config.apikey === 'paste-your-api-key-here') {
+        this.utils.log("You have not provided a " + this.supportedServices[this.service] + " API key for email notifications.\n"
+        + "Please supply a " + this.supportedServices[this.service] + " API key in the config.json file.\n"
+        + "Check out the README.md file for more information on how to obtain an API key.");
+        this.utils.promptExit(1);
+    }
+
+})(require('./config.json'));
 
 //Setup sendgrid
 var sendgrid;
