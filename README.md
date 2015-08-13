@@ -1,10 +1,12 @@
 # Watchit
-A self-hosted Node.js app that watches any number of subreddits and delivers email notifications for new, filtered Reddit posts. It's totally free and is available (self-hosted) for Windows, Mac, and Linux. Features support for...
+A self-hosted, desktop Node.js app that observes any number of subreddits and delivers email notifications for new, filtered Reddit posts. It's totally free and is available for Windows, Mac, and Linux. Features support for...
 
 - **Unlimited subreddits**. Want to get notifications for new posts on both [/r/buildapcsales](https://www.reddit.com/r/buildapcsales/new/) and [/r/gamedeals](https://www.reddit.com/r/gamedeals/new/)? Watchit can check as many subreddits as you want on a single instance, with a unique configuration for each, and will even queue its requests appropriately so it doesn't hog bandwidth.
 - **Unlimited filters**. Get notified only for the posts you deem worthy. Configure notifications for posts based on age, votes, title, self-post text, and more.
-- **Email notifications** using MailGun (free), SendGrid (free), or Mandrill (paid).
+- **Email notifications** for posts using MailGun (free), SendGrid (free), or Mandrill (paid).
 - **Custom HTML email templates** for every subreddit. Be brief and include just post titles and URLs, or include post scores, comment counts, age, and more in your emails.
+
+Watchit will regularly poll the *new posts* of subreddits on a configurable interval and send you notification emails for posts meeting certain criteria, as defined by filters on a per-subreddit basis.  
 
 Quick Setup Guide
 -----------
