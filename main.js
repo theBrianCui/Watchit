@@ -75,20 +75,11 @@ var watchit = new (function(userConfig){
     }
 
     this.services = {
-        sendgrid: (this.service === 'sendgrid' ? require('sendgrid')(this.config.apikey) : null)
-    }
-
+        sendgrid: (this.service === 'sendgrid' ? require('sendgrid')(this.config.apikey) : null),
+        mailgun: (this.service === 'mailgun' ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
+        MailComposer: require("mailcomposer").MailComposer
+    };
 })(require('./config.json'));
-
-var mailgun;
-var MailComposer;
-
-//Setup mailgun and mailcomposer
-if (watchit.service == "mailgun") {
-    var Mg = require('mailgun').Mailgun;
-    mailgun = new Mg(watchit.config.apikey);
-    MailComposer = require("mailcomposer").MailComposer;
-}
 
 watchit.utils.log(watchit.supportedServices[watchit.service] + " API Key: " + watchit.config.apikey);
 
@@ -256,6 +247,7 @@ Watcher.prototype.composeEmail = function (posts) {
     return watchit.utils.replaceAll(body, replacements);
 };
 
+//TODO: refactor into watchit global object
 Watcher.prototype.sendEmail = function (subject, body) {
     //Cut off a subject that ends up being too long
     if (subject !== subject.substring(0, 77))
@@ -304,7 +296,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
         }).bind(this));
 
     } else if (watchit.service == "mailgun") {
-        var mc = new MailComposer();
+        var mc = new watchit.services.MailComposer();
         mc.setMessageOption({
             from: this.email.from,
             to: this.email.to,
@@ -314,7 +306,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
 
         mc.buildMessage((function (error, messageSource) {
             if (!error && messageSource) {
-                mailgun.sendRaw(this.email.from, this.email.to,
+                watchit.services.mailgun.sendRaw(this.email.from, this.email.to,
                     messageSource,
                     (function (error) {
                         if (error) this.logEmailError(this);

@@ -1,6 +1,6 @@
 {
+  "service":"mailgun",
   "apikey":"",
-  "service":"sendgrid",
   "defaultEmailTemplate": {
 	"from": "default.email.address@not.a.real.domain",
 	"to": "you@somewhere.place",
