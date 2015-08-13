@@ -74,14 +74,14 @@ var watchit = new (function(userConfig){
         this.utils.promptExit(1);
     }
 
+    this.services = {
+        sendgrid: (this.service === 'sendgrid' ? require('sendgrid')(this.config.apikey) : null)
+    }
+
 })(require('./config.json'));
 
-//Setup sendgrid
-var sendgrid;
 var mailgun;
 var MailComposer;
-if (watchit.service == "sendgrid")
-    sendgrid = require('sendgrid')(watchit.config.apikey);
 
 //Setup mailgun and mailcomposer
 if (watchit.service == "mailgun") {
@@ -263,6 +263,7 @@ Watcher.prototype.sendEmail = function (subject, body) {
 
     if (watchit.service == "sendgrid") {
 
+        var sendgrid = watchit.services.sendgrid;
         sendgrid.send(new sendgrid.Email({
             to: this.email.to,
             from: this.email.from,
