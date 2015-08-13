@@ -84,10 +84,18 @@ Watchit is configured by a single configuration file, `config.json`. The usage o
 
 Each unique subreddit for Watchit to track must be assigned a *Watcher*. Watchers have their own individual properties, which will affect the formatting of their notification emails, the frequency with which they check Reddit, and more:
 
- - `subreddit` : The target subreddit for this Watcher.
+ - `subreddit` : The target subreddit for this Watcher. The value should be a string that refers to the subreddit name.
  - `emailTemplate` : (Optional) The email template used when composing and sending notification messages. If no value is provided, the `defaultEmailTemplate` is used.
  - `interval` : (Optional) How frequently the Watcher will check the subreddit, in milliseconds. If no value is provided, the default value is `60000`, or 1 minute. The minimum possible interval is `5000`, or 5 seconds.
- - `filters` : (Optional) An array of filters for this Watcher.
+ - `filters` : (Optional) An array of filters for this Watcher. If no filters are provided, all new posts (posts not seen before by this `Watcher`) found on each interval will fire a notification. Check out the **Filters** guide below for more information.
+
+**Email Templates**
+
+Email templates describe the notification emails sent out by Watchit. 
+
+**Filters**
+
+Filters allow `Watchers` to notify and report only on a subset of subreddit posts. For example, you may only wish to receive notifications for posts that have more than 10 comments, or posts containing "cat" in the title, or even posts made by specific users. 
 
 # For Developers
 
