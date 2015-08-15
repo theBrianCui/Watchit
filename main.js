@@ -79,6 +79,79 @@ var watchit = new (function(userConfig){
         mailgun: (this.service === 'mailgun' ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
         MailComposer: require("mailcomposer").MailComposer
     };
+    
+    this.sendEmail = function(emailHash, successCallback, failureCallback) {
+        //emailHash should contain properties to, from, subject, body
+
+        //Cut off a subject that ends up being too long
+        if (emailHash.subject !== emailHash.subject.substring(0, 77))
+            emailHash.subject = emailHash.subject.substring(0, 74) + '...';
+
+        if (this.service == "sendgrid") {
+
+            var sendgrid = this.services.sendgrid;
+            sendgrid.send(new sendgrid.Email({
+                to: emailHash.to,
+                from: emailHash.from,
+                subject: emailHash.subject,
+                html: emailHash.body
+            }), (function (error, response) {
+                if (response && response.message == "success") {
+                    successCallback();
+                } else {
+                    failureCallback(error, response);
+                }
+            }).bind(this));
+
+        } else if (this.service == "mandrill") {
+            request({
+                'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
+                'method': 'POST',
+                'json': {
+                    'key': this.config.apikey,
+                    'message': {
+                        'from_email': emailHash.from,
+                        'to': [
+                            {
+                                'email': emailHash.to,
+                                'type': 'to'
+                            }],
+                        'autotext': 'true',
+                        'subject': emailHash.subject,
+                        'html': emailHash.body
+                    }
+                }
+            }, (function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    successCallback();
+                } else {
+                    failureCallback(error, response, body);
+                }
+            }).bind(this));
+
+        } else if (this.service == "mailgun") {
+            var mc = new this.services.MailComposer();
+            mc.setMessageOption({
+                from: emailHash.from,
+                to: emailHash.to,
+                subject: emailHash.subject,
+                html: emailHash.body
+            });
+
+            mc.buildMessage((function (error, messageSource) {
+                if (!error && messageSource) {
+                    this.services.mailgun.sendRaw(emailHash.from, emailHash.to,
+                        messageSource,
+                        (function (error) {
+                            if (error) failureCallback(error);
+                            else successCallback();
+                        }).bind(this));
+                } else {
+                    failureCallback(error);
+                }
+            }).bind(this));
+        }
+    };
 })(require('./config.json'));
 
 watchit.utils.log(watchit.supportedServices[watchit.service] + " API Key: " + watchit.config.apikey);
@@ -247,76 +320,14 @@ Watcher.prototype.composeEmail = function (posts) {
     return watchit.utils.replaceAll(body, replacements);
 };
 
-//TODO: refactor into watchit global object
+//TODO: Make watchit a parameter/property of a Watcher instead of a global
 Watcher.prototype.sendEmail = function (subject, body) {
-    //Cut off a subject that ends up being too long
-    if (subject !== subject.substring(0, 77))
-        subject = subject.substring(0, 74) + '...';
-
-    if (watchit.service == "sendgrid") {
-
-        var sendgrid = watchit.services.sendgrid;
-        sendgrid.send(new sendgrid.Email({
-            to: this.email.to,
-            from: this.email.from,
-            subject: subject,
-            html: body
-        }), (function (error, response) {
-            if (response && response.message == "success") {
-                this.logEmailSuccess();
-            } else {
-                this.logEmailError(error, response);
-            }
-        }).bind(this));
-
-    } else if (watchit.service == "mandrill") {
-        request({
-            'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
-            'method': 'POST',
-            'json': {
-                'key': watchit.config.apikey,
-                'message': {
-                    'from_email': this.email.from,
-                    'to': [
-                        {
-                            'email': this.email.to,
-                            'type': 'to'
-                        }],
-                    'autotext': 'true',
-                    'subject': subject,
-                    'html': body
-                }
-            }
-        }, (function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                this.logEmailSuccess();
-            } else {
-                this.logEmailError(error, response, body);
-            }
-        }).bind(this));
-
-    } else if (watchit.service == "mailgun") {
-        var mc = new watchit.services.MailComposer();
-        mc.setMessageOption({
-            from: this.email.from,
-            to: this.email.to,
-            subject: subject,
-            html: body
-        });
-
-        mc.buildMessage((function (error, messageSource) {
-            if (!error && messageSource) {
-                watchit.services.mailgun.sendRaw(this.email.from, this.email.to,
-                    messageSource,
-                    (function (error) {
-                        if (error) this.logEmailError(this);
-                        else this.logEmailSuccess();
-                    }).bind(this));
-            } else {
-                this.logEmailError(error);
-            }
-        }).bind(this));
-    }
+    watchit.sendEmail({
+        from: this.email.from,
+        to: this.email.to,
+        subject: subject,
+        body: body
+    }, this.logEmailSuccess.bind(this), this.logEmailError.bind(this));
 };
 
 Watcher.prototype.logEmailSuccess = function () {
