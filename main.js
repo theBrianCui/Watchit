@@ -208,7 +208,8 @@ function Dispatcher(watchers) {
     };
 }
 
-function Watcher(configWatcher) {
+function Watcher(configWatcher, master) {
+    this.master = master;
     this.subreddit = configWatcher.subreddit;
     this.email = configWatcher.emailTemplate;
     this.interval = (parseInt(configWatcher.interval)) >= 5000 ? parseInt(configWatcher.interval) : 60000;
@@ -276,8 +277,8 @@ Watcher.prototype.checkSubreddit = function (callback) {
                         return post.title;
                     })).join(', ');
 
-                    var message = watchit.utils.replaceAll(this.composeEmail(newPosts), replacements);
-                    var subject = watchit.utils.replaceAll(this.email.subject, replacements);
+                    var message = this.master.utils.replaceAll(this.composeEmail(newPosts), replacements);
+                    var subject = this.master.utils.replaceAll(this.email.subject, replacements);
                     this.sendEmail(subject, message);
                 }
 
@@ -312,17 +313,17 @@ Watcher.prototype.composeEmail = function (posts) {
             }
         }
 
-        bodyPosts += watchit.utils.replaceAll(this.email.post, postReplacements);
+        bodyPosts += this.master.utils.replaceAll(this.email.post, postReplacements);
     }
 
     var replacements = {};
     replacements['{posts}'] = bodyPosts;
-    return watchit.utils.replaceAll(body, replacements);
+    return this.master.utils.replaceAll(body, replacements);
 };
 
 //TODO: Make watchit a parameter/property of a Watcher instead of a global
 Watcher.prototype.sendEmail = function (subject, body) {
-    watchit.sendEmail({
+    this.master.sendEmail({
         from: this.email.from,
         to: this.email.to,
         subject: subject,
@@ -331,17 +332,17 @@ Watcher.prototype.sendEmail = function (subject, body) {
 };
 
 Watcher.prototype.log = function(message, debug) {
-    watchit.utils.log(this.subreddit + ' : ' + message, debug);
+    this.master.utils.log(this.subreddit + ' : ' + message, debug);
 };
 
 Watcher.prototype.logEmailSuccess = function () {
     this.log('Successfully sent alert email to '
-    + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
+    + this.email.to + ' via ' + this.master.supportedServices[this.master.service] + '.');
 };
 
 Watcher.prototype.logEmailError = function (error, response, body) {
     this.log('Failed to deliver alert email to '
-    + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
+    + this.email.to + ' via ' + this.master.supportedServices[this.master.service] + '.');
     this.log('Check that the provided API key is valid, the chosen service is up, ' +
     'and the from/to email addresses are valid.');
 
@@ -351,17 +352,17 @@ Watcher.prototype.logEmailError = function (error, response, body) {
     if (body) this.log('Body: ' + JSON.stringify(body));
 };
 
-(function main(watchit) {
+(function main(master) {
     var watchers = [];
-    if (Array.isArray(watchit.config.watchers)) {
-        watchers = watchit.config.watchers.map(function (watcher) {
+    if (Array.isArray(master.config.watchers)) {
+        watchers = master.config.watchers.map(function (watcher) {
             if (!watcher.emailTemplate)
-                watcher.emailTemplate = watchit.config.defaultEmailTemplate;
-            return new Watcher(watcher);
+                watcher.emailTemplate = master.config.defaultEmailTemplate;
+            return new Watcher(watcher, master);
         });
     }
 
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
-    watchit.utils.log('Watchit is now running.');
+    master.utils.log('Watchit is now running.');
 })(watchit);
