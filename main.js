@@ -351,7 +351,7 @@ Watcher.prototype.logEmailError = function (error, response, body) {
     if (body) this.log('Body: ' + JSON.stringify(body));
 };
 
-function main() {
+(function main(watchit) {
     var watchers = [];
     if (Array.isArray(watchit.config.watchers)) {
         watchers = watchit.config.watchers.map(function (watcher) {
@@ -364,6 +364,4 @@ function main() {
     var Dispatch = new Dispatcher(watchers);
     Dispatch.start();
     watchit.utils.log('Watchit is now running.');
-}
-
-main();
+})(watchit);
