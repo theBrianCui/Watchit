@@ -8,7 +8,7 @@ var Filter = require('./lib/Filter.js');
 
 //The global watchit object, used for namespacing
 var watchit = new (function(userConfig){
-    this.args = require('./lib/arguments.js')({
+    var _args = require('./lib/arguments.js')({
         log: false,
         silent: false,
         key: '',
@@ -19,27 +19,27 @@ var watchit = new (function(userConfig){
         var cfg = userConfig;
         if(args.key) cfg.apikey = args.key;
         return cfg;
-    })(userConfig, this.args);
+    })(userConfig, _args);
 
     this.utils =  {
         log: function (message, debug) {
             //The higher the value of `debug`, the less important it is
             //If no argument is provided (or if 0), always log the message
-            if (!debug || debug <= this.args.debug) {
+            if (!debug || debug <= _args.debug) {
                 var messages = message.split('\n');
                 for(var i = 0; i < messages.length; i++){
                     var output = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + messages[i];
 
-                    if (!this.args.silent) console.log(output);
+                    if (!_args.silent) console.log(output);
                     this.utils.writeToLogFile(output);
                 }
             }
         }.bind(this),
         writeToLogFile: function(message) {
-            if (this.args.log) {
+            if (_args.log) {
                 fs.appendFile('Watchit.log', message + '\n', function (err) {
                     if (err) {
-                        this.args.log = false;
+                        _args.log = false;
                         this.utils.log('Error: could not write to file Watchit.log. ' + err + '\n'
                         + 'Disabling logging mode.');
                     }
@@ -49,7 +49,7 @@ var watchit = new (function(userConfig){
         replaceAll: require('./lib/stringReplaceAll.js'),
         promptExit: function(code) {
             this.utils.log("Press any key to exit...");
-            if (!this.args.silent)
+            if (!_args.silent)
                 readlineSync.keyIn();
             process.exit(code == null ? 0 : code);
         }.bind(this)
@@ -74,7 +74,7 @@ var watchit = new (function(userConfig){
         this.utils.promptExit(1);
     }
 
-    this.services = {
+    var _services = {
         sendgrid: (this.service === 'sendgrid' ? require('sendgrid')(this.config.apikey) : null),
         mailgun: (this.service === 'mailgun' ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
         MailComposer: require("mailcomposer").MailComposer
@@ -130,7 +130,7 @@ var watchit = new (function(userConfig){
             }).bind(this));
 
         } else if (this.service == "mailgun") {
-            var mc = new this.services.MailComposer();
+            var mc = new _services.MailComposer();
             mc.setMessageOption({
                 from: emailHash.from,
                 to: emailHash.to,
@@ -140,7 +140,7 @@ var watchit = new (function(userConfig){
 
             mc.buildMessage((function (error, messageSource) {
                 if (!error && messageSource) {
-                    this.services.mailgun.sendRaw(emailHash.from, emailHash.to,
+                    _services.mailgun.sendRaw(emailHash.from, emailHash.to,
                         messageSource,
                         (function (error) {
                             if (error) failureCallback(error);
