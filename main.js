@@ -152,9 +152,9 @@ var watchit = new (function(userConfig){
             }).bind(this));
         }
     };
-})(require('./config.json'));
 
-watchit.utils.log(watchit.supportedServices[watchit.service] + " API Key: " + watchit.config.apikey);
+    this.utils.log(this.supportedServices[this.service] + " API Key: " + this.config.apikey);
+})(require('./config.json'));
 
 function Dispatcher(watchers) {
     var _lock = false;
@@ -220,11 +220,11 @@ function Watcher(configWatcher) {
             return new Filter(filter);
         });
     }
-    watchit.utils.log('This subreddit has ' + this.filters.length + ' filters.');
+    this.log('This subreddit has ' + this.filters.length + ' filters.');
 }
 
 Watcher.prototype.checkSubreddit = function (callback) {
-    watchit.utils.log('Checking for new posts...');
+    this.log('Checking for new posts...');
     request({'url': 'https://reddit.com/r/' + this.subreddit + '/new.json'},
         (function (error, response, body) {
             if (!error && response.statusCode == 200) {
@@ -233,7 +233,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
                 var loadedPosts = JSON.parse(body).data.children.map(function (post) {
                     return new RedditPost(post);
                 });
-                watchit.utils.log('' + loadedPosts.length + ' posts loaded.');
+                this.log('' + loadedPosts.length + ' posts loaded.');
 
                 //Filter loadedPosts
                 loadedPosts = loadedPosts.filter((function (post) {
@@ -250,7 +250,7 @@ Watcher.prototype.checkSubreddit = function (callback) {
                     //If no filters are defined, let all posts pass
                     return true;
                 }).bind(this));
-                watchit.utils.log(loadedPosts.length + ' posts remain after applying '
+                this.log(loadedPosts.length + ' posts remain after applying '
                 + this.filters.length + ' filters.');
 
                 //Step through each post from the loadedPosts and compare with oldPosts
@@ -266,9 +266,9 @@ Watcher.prototype.checkSubreddit = function (callback) {
                     }
                 }
 
-                watchit.utils.log(newPosts.length + ' filtered posts are new.');
+                this.log(newPosts.length + ' filtered posts are new.');
                 if (newPosts.length > 0) {
-                    watchit.utils.log(newPosts[0].ageString + ' is the age of the newest filtered post.');
+                    this.log(newPosts[0].ageString + ' is the age of the newest filtered post.');
                     var replacements = {};
                     replacements['{subreddit}'] = this.subreddit;
                     replacements['{count}'] = newPosts.length;
@@ -284,10 +284,10 @@ Watcher.prototype.checkSubreddit = function (callback) {
                 this.oldPosts = loadedPosts;
 
             } else {
-                watchit.utils.log('Reddit read failure!');
-                watchit.utils.log('Error: ' + JSON.stringify(error));
-                watchit.utils.log('Response: ' + JSON.stringify(response), 1);
-                watchit.utils.log('Body: ' + JSON.stringify(body));
+                this.log('Reddit read failure!');
+                this.log('Error: ' + JSON.stringify(error));
+                this.log('Response: ' + JSON.stringify(response), 1);
+                this.log('Body: ' + JSON.stringify(body));
             }
 
             callback();
@@ -330,21 +330,25 @@ Watcher.prototype.sendEmail = function (subject, body) {
     }, this.logEmailSuccess.bind(this), this.logEmailError.bind(this));
 };
 
+Watcher.prototype.log = function(message, debug) {
+    watchit.utils.log(this.subreddit + ' : ' + message, debug);
+};
+
 Watcher.prototype.logEmailSuccess = function () {
-    watchit.utils.log('Successfully sent alert email to '
+    this.log('Successfully sent alert email to '
     + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
 };
 
 Watcher.prototype.logEmailError = function (error, response, body) {
-    watchit.utils.log('Failed to deliver alert email to '
+    this.log('Failed to deliver alert email to '
     + this.email.to + ' via ' + watchit.supportedServices[watchit.service] + '.');
-    watchit.utils.log('Check that the provided API key is valid, the chosen service is up, ' +
+    this.log('Check that the provided API key is valid, the chosen service is up, ' +
     'and the from/to email addresses are valid.');
 
-    if (error) watchit.utils.log('Error: ' + JSON.stringify(error));
+    if (error) this.log('Error: ' + JSON.stringify(error));
     //The response tends to be long and confusing, so log it on debug level 1
-    if (response) watchit.utils.log('Response: ' + JSON.stringify(response), 1);
-    if (body) watchit.utils.log('Body: ' + JSON.stringify(body));
+    if (response) this.log('Response: ' + JSON.stringify(response), 1);
+    if (body) this.log('Body: ' + JSON.stringify(body));
 };
 
 function main() {
