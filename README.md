@@ -94,6 +94,22 @@ Each unique subreddit for Watchit to track must be assigned a *Watcher*. Watcher
 **Email Templates**
 
 Email templates describe the notification emails sent out by Watchit. 
+Each time a `Watcher` checks a subreddit, it will filter posts from the *New* queue in chronological order. If any posts (that
+pass the filters) have not been seen by that `Watcher` before, Watchit will immediately compose and send a notification email
+describing those posts. 
+
+Email templates require the following properties:
+
+ - `from` : The email sender's address, in other words, the address that emails appear to be from. 
+ It is possible to use any email address here, but if you use an address with a domain you do not own, emails may show up
+ in your inbox as spam or phishing attempts.
+ - `to` : The destination/target email address for notification emails. 
+ - `subject` : The subject/title of notification emails. Titles longer than 77 characters will be truncated to 74 characters
+ and have ellipsis (...) appended to the end.
+ - `body` : The body contents of notification emails. Raw HTML is supported. A special `{posts}` substitution inserts 
+ all the new, filtered posts, each described by the `post` property (see below).
+ - `post` : A template for describing each post. Raw HTML is supported. The `{posts}` substitution usable in the `body` property
+ inserts all the new, filtered posts as described by this template concatenated together.
 
 **Filters**
 
