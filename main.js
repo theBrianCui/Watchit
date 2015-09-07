@@ -21,7 +21,7 @@ var watchit = new (function(userConfig){
         return cfg;
     })(userConfig, _args);
 
-    this.utils =  {
+    this.utils = {
         log: function (message, debug) {
             //The higher the value of `debug`, the less important it is
             //If no argument is provided (or if 0), always log the message
@@ -35,6 +35,7 @@ var watchit = new (function(userConfig){
                 }
             }
         }.bind(this),
+
         writeToLogFile: function(message) {
             if (_args.log) {
                 fs.appendFile('Watchit.log', message + '\n', function (err) {
@@ -46,13 +47,31 @@ var watchit = new (function(userConfig){
                 }.bind(this));
             }
         }.bind(this),
+
         replaceAll: require('./lib/stringReplaceAll.js'),
+
         promptExit: function(code) {
             this.utils.log("Press any key to exit...");
             if (!_args.silent)
                 readlineSync.keyIn();
             process.exit(code == null ? 0 : code);
-        }.bind(this)
+        }.bind(this),
+
+        validateEmailTemplate: function(emailTemplate) {
+            var properties = ['from', 'to', 'subject', 'body', 'post'];
+            //Taken from the HTML5 Email spec
+            //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
+            var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+            for(var i = 0; i < properties.length; i++) {
+                var value = emailTemplate[properties[i]];
+                if(!value) {
+                    return false;
+                } else if (properties[i] === 'from' || properties[i] === 'to') {
+                    if(!emailRegex.test(value)) return false;
+                }
+            }
+            return true;
+        }
     };
 
     this.utils.log("Launching Watchit!");
@@ -79,7 +98,7 @@ var watchit = new (function(userConfig){
         mailgun: (this.service === 'mailgun' ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
         MailComposer: require("mailcomposer").MailComposer
     };
-    
+
     this.sendEmail = function(emailHash, successCallback, failureCallback) {
         //emailHash should contain properties to, from, subject, body
 
