@@ -58,10 +58,13 @@ var watchit = new (function(userConfig){
         }.bind(this),
 
         validateEmailTemplate: function(emailTemplate) {
+            if (!emailTemplate) return false;
+
             var properties = ['from', 'to', 'subject', 'body', 'post'];
             //Taken from the HTML5 Email spec
             //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
             var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+
             for(var i = 0; i < properties.length; i++) {
                 var value = emailTemplate[properties[i]];
                 if(!value) {
@@ -70,7 +73,7 @@ var watchit = new (function(userConfig){
                     if(!emailRegex.test(value)) return false;
                 }
             }
-            return true;
+            return emailTemplate;
         }
     };
 
@@ -373,13 +376,22 @@ Watcher.prototype.logEmailError = function (error, response, body) {
 
 (function main(master) {
     var watchers = [];
+    var defaultEmailTemplate = master.utils.validateEmailTemplate(master.config.defaultEmailTemplate);
+
     if (Array.isArray(master.config.watchers)) {
         watchers = master.config.watchers.map(function (watcher) {
             var selectedWatcher = new Watcher(watcher, master);
 
-            //TODO: quit if defaultEmailTemplate is invalid
+            //TODO: move validation code into Watcher
             if (!master.utils.validateEmailTemplate(selectedWatcher.email)) {
                 selectedWatcher.log("An invalid email template was provided for this Watcher.");
+
+                if(!defaultEmailTemplate) {
+                    master.utils.log("The default email template is invalid.\n"
+                    + "Please ensure a valid default email template is provided,\n"
+                    + "or a valid email template is provided for each Watcher.");
+                    master.utils.promptExit(1);
+                }
                 selectedWatcher.log("The default email template will be used instead.");
                 selectedWatcher.email = master.config.defaultEmailTemplate;
             }
