@@ -375,9 +375,16 @@ Watcher.prototype.logEmailError = function (error, response, body) {
     var watchers = [];
     if (Array.isArray(master.config.watchers)) {
         watchers = master.config.watchers.map(function (watcher) {
-            if (!watcher.emailTemplate)
-                watcher.emailTemplate = master.config.defaultEmailTemplate;
-            return new Watcher(watcher, master);
+            var selectedWatcher = new Watcher(watcher, master);
+
+            //TODO: quit if defaultEmailTemplate is invalid
+            if (!master.utils.validateEmailTemplate(selectedWatcher.email)) {
+                selectedWatcher.log("An invalid email template was provided for this Watcher.");
+                selectedWatcher.log("The default email template will be used instead.");
+                selectedWatcher.email = master.config.defaultEmailTemplate;
+            }
+
+            return selectedWatcher;
         });
     }
 
