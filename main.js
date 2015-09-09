@@ -111,7 +111,7 @@ var watchit = new (function(userConfig){
 
         if (this.service == "sendgrid") {
 
-            var sendgrid = this.services.sendgrid;
+            var sendgrid = _services.sendgrid;
             sendgrid.send(new sendgrid.Email({
                 to: emailHash.to,
                 from: emailHash.from,
@@ -258,38 +258,10 @@ Watcher.prototype.checkSubreddit = function (callback) {
                 });
                 this.log('' + loadedPosts.length + ' posts loaded.');
 
-                //Filter loadedPosts
-                loadedPosts = loadedPosts.filter((function (post) {
-
-                    var filterCount = this.filters.length;
-                    //At least one filter must pass
-                    if (filterCount > 0) {
-                        for (var u = 0; u < filterCount; u++) {
-                            if (this.filters[u].test(post)) return true;
-                        }
-                        return false;
-                    }
-
-                    //If no filters are defined, let all posts pass
-                    return true;
-                }).bind(this));
-                this.log(loadedPosts.length + ' posts remain after applying '
-                + this.filters.length + ' filters.');
-
-                //Step through each post from the loadedPosts and compare with oldPosts
-                //Since listings are sorted by submission date, we can stop as soon as an old post is seen
-                var newPosts = [];
-                for (var k = 0; k < loadedPosts.length; k++) {
-                    if (!loadedPosts[k].equals(this.oldPosts[0])) {
-                        newPosts.push(loadedPosts[k])
-                    } else {
-                        //When we reach a matching post, we know the rest of the posts will match
-                        //This works because posts are sorted by age
-                        break;
-                    }
-                }
-
+                var filteredPosts = this.filterPosts(loadedPosts);
+                var newPosts = this.selectNewPostsFrom(filteredPosts);
                 this.log(newPosts.length + ' filtered posts are new.');
+
                 if (newPosts.length > 0) {
                     this.log(newPosts[0].ageString + ' is the age of the newest filtered post.');
                     var replacements = {};
@@ -315,6 +287,39 @@ Watcher.prototype.checkSubreddit = function (callback) {
 
             callback();
         }).bind(this));
+};
+
+Watcher.prototype.filterPosts = function(posts) {
+    return posts.filter((function (post) {
+
+        var filterCount = this.filters.length;
+        //At least one filter must pass
+        if (filterCount > 0) {
+            for (var u = 0; u < filterCount; u++) {
+                if (this.filters[u].test(post)) return true;
+            }
+            return false;
+        }
+
+        //If no filters are defined, let all posts pass
+        return true;
+    }).bind(this));
+};
+
+Watcher.prototype.selectNewPostsFrom = function(posts) {
+    //Step through each post and compare with oldPosts
+    //Since listings are sorted by submission date, we can stop as soon as an old post is seen
+    var newPosts = [];
+    for (var k = 0; k < posts.length; k++) {
+        if (!posts[k].equals(this.oldPosts[0])) {
+            newPosts.push(posts[k])
+        } else {
+            //When we reach a matching post, we know the rest of the posts will match
+            //This works because posts are sorted by age
+            break;
+        }
+    }
+    return newPosts;
 };
 
 Watcher.prototype.composeEmail = function (posts) {
@@ -343,7 +348,6 @@ Watcher.prototype.composeEmail = function (posts) {
     return this.master.utils.replaceAll(body, replacements);
 };
 
-//TODO: Make watchit a parameter/property of a Watcher instead of a global
 Watcher.prototype.sendEmail = function (subject, body) {
     this.master.sendEmail({
         from: this.email.from,
