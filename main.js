@@ -48,8 +48,6 @@ var watchit = new (function(userConfig){
             }
         }.bind(this),
 
-        replaceAll: require('./lib/stringReplaceAll.js'),
-
         promptExit: function(code) {
             this.utils.log("Press any key to exit...");
             if (!_args.silent)
