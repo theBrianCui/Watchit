@@ -63,7 +63,7 @@ var watchit = new (function(userConfig){
             var properties = ['from', 'to', 'subject', 'body', 'post'];
             //Taken from the HTML5 Email spec
             //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
-            var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+            var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
             for(var i = 0; i < properties.length; i++) {
                 var value = emailTemplate[properties[i]];
