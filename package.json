@@ -6,6 +6,7 @@
   "dependencies": {
     "mailcomposer": "^0.2.12",
     "mailgun": "^0.5.0",
+    "minimist": "^1.2.0",
     "readline-sync": "^1.2.19",
     "request": "^2.60.0",
     "sendgrid": "^1.9.2"
