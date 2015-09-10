@@ -1,5 +1,6 @@
 var fs = require('fs');
 var readlineSync = require('readline-sync');
+var minimist = require('minimist');
 
 //Classes
 var Watcher = require('./lib/Watcher.js');
@@ -8,15 +9,39 @@ var Watcher = require('./lib/Watcher.js');
 
 //The global watchit object, used for namespacing
 var watchit = new (function(userConfig){
-    var _args = require('./lib/arguments.js')({
-        log: false,
-        silent: false,
-        key: '',
-        debug: 0
-    });
+    var _args = (function(provided) {
+        var arguments = {
+            log: false,
+            silent: false,
+            service: '',
+            key: '',
+            debug: 0
+        };
+
+        if(provided.log === true || provided.l === true)
+            arguments.log = true;
+
+        if(provided.silent === true || provided.s === true)
+            arguments.silent = true;
+
+        var pService = provided.service;
+        if(pService && typeof(pService) === "string")
+            arguments.service = pService;
+
+        var pKey = provided.key || provided.k;
+        if(pKey && typeof(pKey) === "string")
+            arguments.key = pKey;
+
+        var pDebug = provided.debug || provided.d;
+        if(typeof(pDebug) === "number" && pDebug > arguments.debug)
+            arguments.debug = pDebug;
+
+        return arguments;
+    })(process.IsEmbedded ? minimist(process.argv.slice(1)) : minimist(process.argv.slice(2)));
 
     this.config = (function(userConfig, args) {
         var cfg = userConfig;
+        if(args.service) cfg.service = args.service;
         if(args.key) cfg.apikey = args.key;
         return cfg;
     })(userConfig, _args);
