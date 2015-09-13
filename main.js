@@ -25,6 +25,10 @@ var watchit = new (function(userConfig){
         if(provided.silent === true || provided.s === true)
             arguments.silent = true;
 
+        //Be careful: when only a signle dash is provided with the service argument
+        //e.g. -service instead of --service, minimist interprets this as -s -e -r...
+        //and not "service" (the whole word)
+        //Perhaps there's a better name for this argument?
         var pService = provided.service;
         if(pService && typeof(pService) === "string")
             arguments.service = pService;
