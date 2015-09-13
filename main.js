@@ -10,6 +10,7 @@ var Watcher = require('./lib/Watcher.js');
 //The global watchit object, used for namespacing
 var watchit = new (function(userConfig){
     var _args = (function(provided) {
+        //TODO: Make log file name customizable
         var arguments = {
             log: false,
             silent: false,
