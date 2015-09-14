@@ -262,6 +262,7 @@ function Dispatcher(watchers) {
     var watchers = [];
     var defaultEmailTemplate = master.utils.validateEmailTemplate(master.config.defaultEmailTemplate);
 
+    //TODO: clean up "exception handling" code
     if (Array.isArray(master.config.watchers)) {
         watchers = master.config.watchers.map(function (watcher) {
             var selectedWatcher = new Watcher(watcher, master);
@@ -284,7 +285,15 @@ function Dispatcher(watchers) {
         });
     }
 
-    var Dispatch = new Dispatcher(watchers);
-    Dispatch.start();
-    master.utils.log('Watchit is now running.');
+    var enabledWatchers = watchers.filter(function(watcher) { return watcher.enabled });
+    master.utils.log("Loaded " + watchers.length + " Watchers, " + enabledWatchers.length + " valid and enabled.");
+
+    if(enabledWatchers.length > 0) {
+        var Dispatch = new Dispatcher(enabledWatchers);
+        Dispatch.start();
+        master.utils.log('Watchit is now running.');
+    } else {
+        master.utils.log('No valid and enabled Watchers found in the configuration file.');
+        master.utils.promptExit(0);
+    }
 })(watchit);
