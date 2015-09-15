@@ -137,7 +137,7 @@ var watchit = new (function(userConfig){
         if (emailHash.subject !== emailHash.subject.substring(0, 77))
             emailHash.subject = emailHash.subject.substring(0, 74) + '...';
 
-        if (this.service == "sendgrid") {
+        if (this.service === "sendgrid") {
 
             var sendgrid = _services.sendgrid;
             sendgrid.send(new sendgrid.Email({
@@ -153,7 +153,7 @@ var watchit = new (function(userConfig){
                 }
             }).bind(this));
 
-        } else if (this.service == "mandrill") {
+        } else if (this.service === "mandrill") {
             request({
                 'url': 'https://mandrillapp.com/api/1.0/messages/send.json',
                 'method': 'POST',
@@ -179,7 +179,7 @@ var watchit = new (function(userConfig){
                 }
             }).bind(this));
 
-        } else if (this.service == "mailgun") {
+        } else if (this.service === "mailgun") {
             var mc = new _services.MailComposer();
             mc.setMessageOption({
                 from: emailHash.from,
