@@ -18,7 +18,7 @@ var watchit = new (function (configPath) {
     var WATCHIT_LOG_FILE = 'Watchit.log';
     var DEFAULT_API_KEY = 'paste-your-api-key-here';
     var MANDRILL_API_URL = 'https://mandrillapp.com/api/1.0/messages/send.json';
-    //The service names are capitalized differently, so store their "friendly" names in constants
+    //The service names are capitalized differently, so store their 'friendly' names in constants
     var MAILGUN = 'Mailgun';
     var SENDGRID = 'SendGrid';
     var MANDRILL = 'Mandrill';
@@ -40,18 +40,18 @@ var watchit = new (function (configPath) {
 
         //Be careful: when only a signle dash is provided with the service argument
         //e.g. -service instead of --service, minimist interprets this as -s -e -r...
-        //and not "service" (the whole word)
+        //and not 'service' (the whole word)
         //Perhaps there's a better name for this argument?
         var pService = provided.service;
-        if (pService && typeof(pService) === "string")
+        if (pService && typeof(pService) === 'string')
             arguments.service = pService;
 
         var pKey = provided.key || provided.k;
-        if (pKey && typeof(pKey) === "string")
+        if (pKey && typeof(pKey) === 'string')
             arguments.key = pKey;
 
         var pDebug = provided.debug || provided.d;
-        if (typeof(pDebug) === "number" && pDebug > arguments.debug)
+        if (typeof(pDebug) === 'number' && pDebug > arguments.debug)
             arguments.debug = pDebug;
 
         return arguments;
@@ -71,7 +71,7 @@ var watchit = new (function (configPath) {
             if (!debug || debug <= _args.debug) {
                 var messages = message.split('\n');
                 for (var i = 0; i < messages.length; i++) {
-                    var output = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + " : " + messages[i];
+                    var output = (new Date).toISOString().replace(/z|t/gi, ' ').substring(0, 19) + ' : ' + messages[i];
 
                     if (!_args.silent) console.log(output);
                     this.utils.writeToLogFile(output);
@@ -92,7 +92,7 @@ var watchit = new (function (configPath) {
         }.bind(this),
 
         promptExit: function (code) {
-            this.utils.log("Press any key to exit...");
+            this.utils.log('Press any key to exit...');
             if (!_args.silent)
                 readlineSync.keyIn();
             process.exit(code == null ? 0 : code);
@@ -118,32 +118,32 @@ var watchit = new (function (configPath) {
         }
     };
 
-    this.utils.log("Launching Watchit!");
+    this.utils.log('Launching Watchit!');
 
     var _serviceFriendlyNames = {
         mailgun: MAILGUN,
         sendgrid: SENDGRID,
         mandrill: MANDRILL
     };
-    var _rawService = (typeof this.config.service === "string") ? this.config.service.toLowerCase() : '';
+    var _rawService = (typeof this.config.service === 'string') ? this.config.service.toLowerCase() : '';
     this.getService = function () {
         return _serviceFriendlyNames[_rawService];
     };
 
     if (!this.getService()) {
-        this.utils.log(this.config.service + " is not a supported email service. Please check the README.md file for details.");
+        this.utils.log(this.config.service + ' is not a supported email service. Please check the README.md file for details.');
         this.utils.promptExit(1);
     } else if (this.config.apikey === '' || this.config.apikey === DEFAULT_API_KEY) {
-        this.utils.log("You have not provided a " + this.getService() + " API key for email notifications.\n"
-        + "Please supply a " + this.getService() + " API key in the " + configPath + " file.\n"
-        + "Check out the README.md file for more information on how to obtain an API key.");
+        this.utils.log('You have not provided a ' + this.getService() + ' API key for email notifications.\n'
+        + 'Please supply a ' + this.getService() + ' API key in the ' + configPath + ' file.\n'
+        + 'Check out the README.md file for more information on how to obtain an API key.');
         this.utils.promptExit(1);
     }
 
     var _serviceHandlers = {
         sendgrid: (this.getService() === SENDGRID ? require('sendgrid')(this.config.apikey) : null),
         mailgun: (this.getService() === MAILGUN ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
-        MailComposer: require("mailcomposer").MailComposer
+        MailComposer: require('mailcomposer').MailComposer
     };
 
     this.sendEmail = function (emailHash, successCallback, failureCallback) {
@@ -185,7 +185,7 @@ var watchit = new (function (configPath) {
                     subject: emailHash.subject,
                     html: emailHash.body
                 }), (function (error, response) {
-                    if (response && response.message == "success") {
+                    if (response && response.message == 'success') {
                         successCallback();
                     } else {
                         failureCallback(error, response);
@@ -221,7 +221,7 @@ var watchit = new (function (configPath) {
                 break;
         }
     };
-    this.utils.log(this.getService() + " API Key: " + this.config.apikey);
+    this.utils.log(this.getService() + ' API Key: ' + this.config.apikey);
 })(CONFIG_FILE_PATH);
 
 function Dispatcher(watchers) {
@@ -288,7 +288,7 @@ function Dispatcher(watchers) {
     var enabledWatchers = watchers.filter(function (watcher) {
         return watcher.enabled
     });
-    master.utils.log("Loaded " + watchers.length + " Watchers, " + enabledWatchers.length + " valid and enabled.");
+    master.utils.log('Loaded ' + watchers.length + ' Watchers, ' + enabledWatchers.length + ' valid and enabled.');
 
     if (enabledWatchers.length > 0) {
         var Dispatch = new Dispatcher(enabledWatchers);
