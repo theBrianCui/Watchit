@@ -261,7 +261,6 @@ function Dispatcher(watchers) {
 (function main(master) {
     var watchers = [];
 
-    //TODO: clean up "exception handling" code
     if (Array.isArray(master.config.watchers)) {
         watchers = master.config.watchers.map(function (watcher) {
             return new Watcher(watcher, master);
