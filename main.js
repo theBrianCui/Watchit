@@ -260,28 +260,11 @@ function Dispatcher(watchers) {
 
 (function main(master) {
     var watchers = [];
-    var defaultEmailTemplate = master.utils.validateEmailTemplate(master.config.defaultEmailTemplate);
 
     //TODO: clean up "exception handling" code
     if (Array.isArray(master.config.watchers)) {
         watchers = master.config.watchers.map(function (watcher) {
-            var selectedWatcher = new Watcher(watcher, master);
-
-            //TODO: move validation code into Watcher
-            if (!master.utils.validateEmailTemplate(selectedWatcher.email)) {
-                selectedWatcher.log("An invalid email template was provided for this Watcher.");
-
-                if(!defaultEmailTemplate) {
-                    master.utils.log("The default email template is invalid.\n"
-                    + "Please ensure a valid default email template is provided,\n"
-                    + "or a valid email template is provided for each Watcher.");
-                    master.utils.promptExit(1);
-                }
-                selectedWatcher.log("The default email template will be used instead.");
-                selectedWatcher.email = master.config.defaultEmailTemplate;
-            }
-
-            return selectedWatcher;
+            return new Watcher(watcher, master);
         });
     }
 
