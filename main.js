@@ -127,7 +127,7 @@ var watchit = new (function (configPath) {
     };
     var _rawService = (typeof this.config.service === "string") ? this.config.service.toLowerCase() : '';
     this.getService = function () {
-        return _serviceFriendlyNames[this.service]
+        return _serviceFriendlyNames[_rawService];
     };
 
     if (!this.getService()) {
