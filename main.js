@@ -140,7 +140,7 @@ var watchit = new (function (configPath) {
         this.utils.promptExit(1);
     }
 
-    var _services = {
+    var _serviceHandlers = {
         sendgrid: (this.getService() === SENDGRID ? require('sendgrid')(this.config.apikey) : null),
         mailgun: (this.getService() === MAILGUN ? new (require('mailgun').Mailgun)(this.config.apikey) : null),
         MailComposer: require("mailcomposer").MailComposer
@@ -155,7 +155,7 @@ var watchit = new (function (configPath) {
 
         switch (this.getService()) {
             case MAILGUN:
-                var mc = new _services.MailComposer();
+                var mc = new _serviceHandlers.MailComposer();
                 mc.setMessageOption({
                     from: emailHash.from,
                     to: emailHash.to,
@@ -165,7 +165,7 @@ var watchit = new (function (configPath) {
 
                 mc.buildMessage((function (error, messageSource) {
                     if (!error && messageSource) {
-                        _services.mailgun.sendRaw(emailHash.from, emailHash.to,
+                        _serviceHandlers.mailgun.sendRaw(emailHash.from, emailHash.to,
                             messageSource,
                             (function (error) {
                                 if (error) failureCallback(error);
@@ -178,7 +178,7 @@ var watchit = new (function (configPath) {
                 break;
 
             case SENDGRID:
-                var sendgrid = _services.sendgrid;
+                var sendgrid = _serviceHandlers.sendgrid;
                 sendgrid.send(new sendgrid.Email({
                     to: emailHash.to,
                     from: emailHash.from,
