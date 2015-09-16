@@ -6,8 +6,8 @@ var minimist = require('minimist');
 var Watcher = require('./lib/Watcher.js');
 
 //Constants
-var CONFIG_FILE_NAME = 'config.json';
-var CONFIG_FILE_PATH = './' + CONFIG_FILE_NAME;
+const CONFIG_FILE_NAME = 'config.json';
+const CONFIG_FILE_PATH = './' + CONFIG_FILE_NAME;
 
 //The global watchit object, used for namespacing
 var watchit = new (function (configPath) {
@@ -15,13 +15,16 @@ var watchit = new (function (configPath) {
 
     //Constants
     //Maybe make log file customizable?
-    var WATCHIT_LOG_FILE = 'Watchit.log';
-    var DEFAULT_API_KEY = 'paste-your-api-key-here';
-    var MANDRILL_API_URL = 'https://mandrillapp.com/api/1.0/messages/send.json';
+    const WATCHIT_LOG_FILE = 'Watchit.log';
+    const DEFAULT_API_KEY = 'paste-your-api-key-here';
+    const MANDRILL_API_URL = 'https://mandrillapp.com/api/1.0/messages/send.json';
     //The service names are capitalized differently, so store their 'friendly' names in constants
-    var MAILGUN = 'Mailgun';
-    var SENDGRID = 'SendGrid';
-    var MANDRILL = 'Mandrill';
+    const MAILGUN = 'Mailgun';
+    const SENDGRID = 'SendGrid';
+    const MANDRILL = 'Mandrill';
+    //Taken from the HTML5 Email spec
+    //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
+    const VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
     var _args = (function (provided) {
         var arguments = {
@@ -100,18 +103,14 @@ var watchit = new (function (configPath) {
 
         validateEmailTemplate: function (emailTemplate) {
             if (!emailTemplate) return false;
-
             var properties = ['from', 'to', 'subject', 'body', 'post'];
-            //Taken from the HTML5 Email spec
-            //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
-            var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
             for (var i = 0; i < properties.length; i++) {
                 var value = emailTemplate[properties[i]];
                 if (!value) {
                     return false;
                 } else if (properties[i] === 'from' || properties[i] === 'to') {
-                    if (!emailRegex.test(value)) return false;
+                    if (!VALID_EMAIL_REGEX.test(value)) return false;
                 }
             }
             return emailTemplate;
