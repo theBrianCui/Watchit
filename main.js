@@ -4,6 +4,7 @@ var minimist = require('minimist');
 
 //Classes
 var Watcher = require('./lib/Watcher.js');
+var EmailTemplate = require('./lib/EmailTemplate.js');
 
 //Constants
 const CONFIG_FILE_NAME = 'config.json';
@@ -22,9 +23,6 @@ var watchit = new (function (configPath) {
     const MAILGUN = 'Mailgun';
     const SENDGRID = 'SendGrid';
     const MANDRILL = 'Mandrill';
-    //Taken from the HTML5 Email spec
-    //See: https://html.spec.whatwg.org/multipage/forms.html#e-mail-state-%28type=email%29
-    const VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
     var _args = (function (provided) {
         var arguments = {
@@ -64,6 +62,9 @@ var watchit = new (function (configPath) {
         var cfg = userConfig;
         if (args.service) cfg.service = args.service;
         if (args.key) cfg.apikey = args.key;
+
+        //Validate the defaultEmailTemplate if provided
+        cfg.defaultEmailTemplate = EmailTemplate.validate(new EmailTemplate(cfg.defaultEmailTemplate));
         return cfg;
     })(userConfig, _args);
 
@@ -99,22 +100,7 @@ var watchit = new (function (configPath) {
             if (!_args.silent)
                 readlineSync.keyIn();
             process.exit(code == null ? 0 : code);
-        }.bind(this),
-
-        validateEmailTemplate: function (emailTemplate) {
-            if (!emailTemplate) return false;
-            var properties = ['from', 'to', 'subject', 'body', 'post'];
-
-            for (var i = 0; i < properties.length; i++) {
-                var value = emailTemplate[properties[i]];
-                if (!value) {
-                    return false;
-                } else if (properties[i] === 'from' || properties[i] === 'to') {
-                    if (!VALID_EMAIL_REGEX.test(value)) return false;
-                }
-            }
-            return emailTemplate;
-        }
+        }.bind(this)
     };
 
     this.utils.log('Launching Watchit!');
